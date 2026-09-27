@@ -460,13 +460,6 @@ const rafVar = (label, name, title, onTitle, iconName, { onColor = ON_GREEN } = 
   face: { title, icon: iconName ? aviaIcon(iconName) : null, color: RAF },
   alt: { title: onTitle, icon: iconName ? aviaIcon(iconName) : null, color: onColor },
 });
-// Bouton poussoir (ex. sélecteurs de page des écrans) : 1 pendant un instant, puis 0.
-const rafPush = (label, name, title) => ({
-  label,
-  desc: 'Rafale · bouton poussoir (à vérifier)',
-  action: { type: 'multi', steps: [setVar(name, 1), { type: 'delay', ms: 150 }, setVar(name, 0)] },
-  face: { title, icon: null, color: '#161b24' },
-});
 // Molette de luminosité : tourner = ± 5 %, valeur affichée en pourcentage.
 // `max` : valeur de l'avion pour 100 %. Constaté en vol sur le Rafale : luminosité des écrans et
 // éclairage des panneaux et voyants vont de 0 à 1 (1 à l'entrée dans le cockpit, saturés au-delà).
@@ -534,7 +527,7 @@ export const RAFALE_COCKPIT_PRESETS = [
   // Molette de visualisation (gauche) : tourner = régler (altitudes, vitesses…), appui = valider.
   rafKnob('Molette de visualisation gauche', 'AZP_RAF_AVIONICS_VISUALISATION_KNOB_LEFT', 'VISU G'),
   // Le VTLD (droite) est un écran tactile, sans molette : aucune commande externe connue.
-  rafPush('VTLG : bas (animation seule)', 'AZP_RAF_VTLG_PAGE_SWITCH_DN', 'VTLG ▼'),
+  // Le bouton bas du VTLG n'est pas encore implémenté dans l'avion.
   rafDial('Éclairage des panneaux', 'AZP_RAF_LIGHTING_PANEL_BACKLIGHT_INTENSITY', 'Panneaux', { max: 1 }),
   rafDial('Éclairage des voyants', 'AZP_RAF_LIGHTING_INTERIOR_INDICATORS_INTENSITY', 'Voyants', { max: 1 }),
   rafDial('Luminosité VTLG', 'AZP_RAF_AVIONICS_BRIGHTNESS_VTLG', 'Lum. VTLG', { max: 1 }),

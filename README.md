@@ -261,8 +261,7 @@ le simulateur :
 Catégorie *Rafale : cockpit (à vérifier)*, construite à partir des variables `L:`
 relevées dans l'avion (fenêtre *Behaviors* de MSFS 2024) : batterie, sécurité
 armement, laser, altimètre STD, dégivrage, désembuage, prélèvement d'air moteur,
-coupure de la direction de roue avant, crosse de secours, tablette EFB ; boutons de
-page des écrans **VTLG / VTLD** (gauche, droite, haut, bas) ; molettes d'éclairage
+coupure de la direction de roue avant, crosse de secours, tablette EFB ; molettes d'éclairage
 et de luminosité des écrans (de 0 à 100 %, ± 5 % par cran). AzurPoly ne documente pas
 l'écriture de ces variables : si une touche n'a pas d'effet dans le cockpit, c'est
 que l'avion ne fait que lire cette variable pour son affichage.
@@ -276,9 +275,8 @@ Il est exécuté par le module gratuit **MobiFlight WASM** (dossier *Community* 
 MSFS, souvent fourni avec les avions complexes) ; le journal indique s'il est
 détecté. Touches fournies (groupe *Rafale : cockpit*) : boutons de page du VTLG
 **FAIL**, **AP** et **WPN**, et la **molette de visualisation** gauche (tourner =
-régler altitudes, vitesses…, appui = valider). Les touches marquées « animation
-seule » ne font que bouger l'interrupteur : envoyez une capture de l'Inspector pour
-les compléter. Le VTLD (écran de droite) est tactile : il ne présente aucune
+régler altitudes, vitesses…, appui = valider). Le bouton bas du VTLG n'est pas
+encore implémenté dans l'avion. Le VTLD (écran de droite) est tactile : il ne présente aucune
 commande externe, et ne peut donc pas être piloté depuis le Deck.
 
 Le Rafale n'expose pas ses systèmes de cockpit (armement, écrans, pilote
