@@ -487,6 +487,34 @@ const rafDial = (label, name, title, { max = 1 } = {}) => {
   };
 };
 
+// Code avionique (événements H:), exécuté par le module MobiFlight WASM.
+const code = (text) => ({ type: 'msfs', kind: 'code', code: text });
+const hEvents = (events) => events.map((e) => `(>H:${e})`).join(' ');
+// Bouton de page : événements H: + animation du bouton (L: à 1 un instant, puis 0).
+const rafPage = (label, events, animVar, title) => ({
+  label,
+  desc: 'Rafale · code avionique (MobiFlight)',
+  action: {
+    type: 'multi',
+    steps: [code(`${hEvents(events)} 1 (>L:${animVar}, Boolean)`), { type: 'delay', ms: 150 }, code(`0 (>L:${animVar}, Boolean)`)],
+  },
+  face: { title, icon: null, color: '#161b24' },
+});
+// Molette sans butée : _INC / _DEC en tournant, _PUSHED à l'appui (validation).
+const rafKnob = (label, base, title) => ({
+  label,
+  desc: 'Rafale · bouton rotatif (MobiFlight)',
+  action: {
+    type: 'dial',
+    sensitivity: 'normal',
+    inc: code(`(>H:${base}_INC)`),
+    dec: code(`(>H:${base}_DEC)`),
+    press: code(`(>H:${base}_PUSHED)`),
+    display: null,
+  },
+  face: { title, icon: null, color: '#161b24' },
+});
+
 export const RAFALE_COCKPIT_PRESETS = [
   rafVar('Batterie', 'AZP_RAF_ELECTRICAL_BATTERY_MASTER_SWITCH_STATE', 'Batterie', 'BATTERIE', 'battery'),
   rafVar('Sécurité armement', 'AZP_RAF_WEAPONS_SAFETY_SWITCH', 'Sécu arme', 'ARME', null, { onColor: ON_RED }),
@@ -498,28 +526,20 @@ export const RAFALE_COCKPIT_PRESETS = [
   rafVar('Direction roue avant (coupure)', 'AZP_RAF_HYDRAULIC_NOSEWHEEL_STEERING_OFF', 'Dir. roue AV', 'DIR. COUPÉE', null, { onColor: ON_AMBER }),
   rafVar('Crosse (secours)', 'AZP_RAF_HYDRAULIC_TAILHOOK_EMERGENCY_SWITCH', 'Crosse', 'CROSSE', null, { onColor: ON_AMBER }),
   rafVar('Tablette EFB', 'AZP_RAF_EFB_ON', 'EFB', 'EFB', null),
-  // Relevé dans l'Inspector (Ctrl+G) : le bouton FAIL déclenche deux événements H: (module
-  // MobiFlight WASM requis) ; la variable L: ne sert qu'à l'animation du bouton.
-  {
-    label: 'VTLG : FAIL (pannes)',
-    desc: 'Rafale · code avionique (MobiFlight)',
-    action: {
-      type: 'multi',
-      steps: [
-        { type: 'msfs', kind: 'code', code: '(>H:AZP_RAF_VTLG_SWITCH_MOVED_ALARMS) (>H:AZP_RAF_ALARMS_ACKNOWLEDGE) 1 (>L:AZP_RAF_VTLG_PAGE_SWITCH_L, Boolean)' },
-        { type: 'delay', ms: 150 },
-        { type: 'msfs', kind: 'code', code: '0 (>L:AZP_RAF_VTLG_PAGE_SWITCH_L, Boolean)' },
-      ],
-    },
-    face: { title: 'FAIL', icon: null, color: '#161b24' },
-  },
-  rafPush('VTLG : page droite', 'AZP_RAF_VTLG_PAGE_SWITCH_R', 'VTLG ▶'),
-  rafPush('VTLG : haut', 'AZP_RAF_VTLG_PAGE_SWITCH_UP', 'VTLG ▲'),
-  rafPush('VTLG : bas', 'AZP_RAF_VTLG_PAGE_SWITCH_DN', 'VTLG ▼'),
-  rafPush('VTLD : page gauche', 'AZP_RAF_VTLD_PAGE_SWITCH_L', 'VTLD ◀'),
-  rafPush('VTLD : page droite', 'AZP_RAF_VTLD_PAGE_SWITCH_R', 'VTLD ▶'),
-  rafPush('VTLD : haut', 'AZP_RAF_VTLD_PAGE_SWITCH_UP', 'VTLD ▲'),
-  rafPush('VTLD : bas', 'AZP_RAF_VTLD_PAGE_SWITCH_DN', 'VTLD ▼'),
+  // Boutons de page du VTLG, relevés dans l'Inspector (Ctrl+G) : chacun déclenche un ou deux
+  // événements H: (module MobiFlight WASM requis) ; la variable L: n'anime que le bouton.
+  rafPage('VTLG : FAIL (pannes)', ['AZP_RAF_VTLG_SWITCH_MOVED_ALARMS', 'AZP_RAF_ALARMS_ACKNOWLEDGE'], 'AZP_RAF_VTLG_PAGE_SWITCH_L', 'FAIL'),
+  rafPage('VTLG : AP (pilote automatique)', ['AZP_RAF_VTLG_SWITCH_MOVED_AUTOPILOT'], 'AZP_RAF_VTLG_PAGE_SWITCH_R', 'AP'),
+  rafPage('VTLG : WPN (armement)', ['AZP_RAF_VTLG_SWITCH_MOVED_WEAPONS'], 'AZP_RAF_VTLG_PAGE_SWITCH_UP', 'WPN'),
+  // Molette de visualisation (gauche) : tourner = régler (altitudes, vitesses…), appui = valider.
+  rafKnob('Molette de visualisation gauche', 'AZP_RAF_AVIONICS_VISUALISATION_KNOB_LEFT', 'VISU G'),
+  // Côté droit supposé symétrique (non relevé) : à confirmer dans l'Inspector.
+  rafKnob('Molette de visualisation droite (à vérifier)', 'AZP_RAF_AVIONICS_VISUALISATION_KNOB_RIGHT', 'VISU D'),
+  rafPush('VTLG : bas (animation seule)', 'AZP_RAF_VTLG_PAGE_SWITCH_DN', 'VTLG ▼'),
+  rafPush('VTLD : page gauche (animation seule)', 'AZP_RAF_VTLD_PAGE_SWITCH_L', 'VTLD ◀'),
+  rafPush('VTLD : page droite (animation seule)', 'AZP_RAF_VTLD_PAGE_SWITCH_R', 'VTLD ▶'),
+  rafPush('VTLD : haut (animation seule)', 'AZP_RAF_VTLD_PAGE_SWITCH_UP', 'VTLD ▲'),
+  rafPush('VTLD : bas (animation seule)', 'AZP_RAF_VTLD_PAGE_SWITCH_DN', 'VTLD ▼'),
   rafDial('Éclairage des panneaux', 'AZP_RAF_LIGHTING_PANEL_BACKLIGHT_INTENSITY', 'Panneaux', { max: 1 }),
   rafDial('Éclairage des voyants', 'AZP_RAF_LIGHTING_INTERIOR_INDICATORS_INTENSITY', 'Voyants', { max: 1 }),
   rafDial('Luminosité VTLG', 'AZP_RAF_AVIONICS_BRIGHTNESS_VTLG', 'Lum. VTLG', { max: 1 }),

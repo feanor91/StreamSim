@@ -156,7 +156,7 @@ test('Rafale : préréglages et nom de l’avion (MSFS 2024)', async () => {
   for (const p of RAFALE_COCKPIT_PRESETS) {
     const a = p.action;
     const vars = [a.sync?.simvar, a.display?.simvar, ...(a.steps ?? []).map((s) => s.var), ...(a.actions ?? []).map((s) => s.var), a.inc?.var, a.dec?.var].filter(Boolean);
-    const codes = (a.steps ?? []).filter((s) => s.kind === 'code').map((s) => s.code);
+    const codes = [...(a.steps ?? []), a.inc, a.dec, a.press].filter((s) => s?.kind === 'code').map((s) => s.code);
     assert.ok(vars.length || codes.length, p.label);
     for (const c of codes) assert.match(c, /AZP_RAF_/, p.label);
     for (const v of vars) assert.ok(isValidSimvar(v) && v.startsWith('L:AZP_RAF_'), `${p.label} : ${v}`);
@@ -181,13 +181,13 @@ test('Rafale : caches posés puis retirés, état lu dans le simulateur', async 
 
 test('Rafale : bouton poussoir (1 puis 0) et molette de luminosité bornée', async () => {
   const { RAFALE_COCKPIT_PRESETS } = await import('../shared/msfs.js');
-  const sim = fakeSimConnect({ vars: { 'L:AZP_RAF_VTLG_PAGE_SWITCH_R': 0, 'L:AZP_RAF_AVIONICS_BRIGHTNESS_VTLG': 0.9 } });
+  const sim = fakeSimConnect({ vars: { 'L:AZP_RAF_VTLD_PAGE_SWITCH_R': 0, 'L:AZP_RAF_AVIONICS_BRIGHTNESS_VTLG': 0.9 } });
   const msfs = createMsfs({ log: quiet, load: async () => sim.lib });
   msfs.start();
   await tick();
-  const push = RAFALE_COCKPIT_PRESETS.find((p) => p.label === 'VTLG : page droite');
+  const push = RAFALE_COCKPIT_PRESETS.find((p) => p.label === 'VTLD : page droite (animation seule)');
   await runAction({}, push.action, 0, { msfs });
-  const writes = sim.calls.filter((c) => c[0] === 'set' && c[1] === 'L:AZP_RAF_VTLG_PAGE_SWITCH_R').map((c) => c[2]);
+  const writes = sim.calls.filter((c) => c[0] === 'set' && c[1] === 'L:AZP_RAF_VTLD_PAGE_SWITCH_R').map((c) => c[2]);
   assert.deepEqual(writes, [1, 0]);
   const dial = RAFALE_COCKPIT_PRESETS.find((p) => p.label === 'Luminosité VTLG');
   // Écrans du Rafale : 0 à 1 (1 = 100 %), pas de 5 %, sans dépasser 1.
@@ -285,5 +285,23 @@ test('journal : une exception SimConnect indique la commande qui l’a provoqué
   await msfs.send('GEAR_TOGGLE');
   sim.handle.emit('exception', { exceptionName: 'UNRECOGNIZED_ID', sendId: n });
   assert.match(warnings.at(-1), /paquet \d+ : transmitClientEvent\(/);
+  msfs.close();
+});
+
+test('Rafale : molette de visualisation (événements H: en tournant, validation à l’appui)', async () => {
+  const { RAFALE_COCKPIT_PRESETS } = await import('../shared/msfs.js');
+  const sim = fakeSimConnect({});
+  const msfs = createMsfs({ log: quiet, load: async () => sim.lib });
+  msfs.start();
+  await tick();
+  const knob = RAFALE_COCKPIT_PRESETS.find((p) => p.label === 'Molette de visualisation gauche').action;
+  await runAction({}, knob.inc, 0, { msfs });
+  await runAction({}, knob.dec, 0, { msfs });
+  await runAction({}, knob.press, 0, { msfs });
+  assert.deepEqual(sim.mfCommands.slice(1), [
+    'MF.SimVars.Set.(>H:AZP_RAF_AVIONICS_VISUALISATION_KNOB_LEFT_INC)',
+    'MF.SimVars.Set.(>H:AZP_RAF_AVIONICS_VISUALISATION_KNOB_LEFT_DEC)',
+    'MF.SimVars.Set.(>H:AZP_RAF_AVIONICS_VISUALISATION_KNOB_LEFT_PUSHED)',
+  ]);
   msfs.close();
 });
