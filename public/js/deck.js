@@ -226,7 +226,40 @@ function buildControl(pg, cell) {
   let holdTimer = null;
   let held = false;
 
+  // Molette bornée (ex. luminosité de 0 à 100 %) : le cadran s'arrête aux limites au lieu de
+  // tourner dans le vide. Estimation locale de la valeur, recalée à chaque valeur reçue.
+  const bounds = (() => {
+    const { inc, dec, display } = key.action;
+    if (!isDial || inc?.op !== 'add' || !display?.simvar) return null;
+    if (String(inc.var ?? '').toUpperCase() !== String(display.simvar).toUpperCase()) return null;
+    const min = inc.min ?? dec?.min;
+    const max = inc.max ?? dec?.max;
+    if ((min ?? '') === '' && (max ?? '') === '') return null;
+    return {
+      min: (min ?? '') === '' ? -Infinity : Number(min),
+      max: (max ?? '') === '' ? Infinity : Number(max),
+      up: Number(inc.value) || 0,
+      down: Number(dec?.value) || 0,
+    };
+  })();
+  let estimate = null;
+  const limitSteps = (n) => {
+    const known = estimate ?? state.values[sk];
+    if (!bounds || known === null || known === undefined || !Number.isFinite(Number(known))) return n;
+    let v = Number(known);
+    let allowed = 0;
+    for (let i = 0; i < Math.abs(n); i++) {
+      if (n > 0 ? v >= bounds.max - 1e-9 : v <= bounds.min + 1e-9) break;
+      v = Math.min(bounds.max, Math.max(bounds.min, v + (n > 0 ? bounds.up : bounds.down)));
+      allowed++;
+    }
+    estimate = v;
+    return Math.sign(n) * allowed;
+  };
+
   const step = (n) => {
+    n = limitSteps(n);
+    if (!n) return;
     angles[sk] = (angles[sk] ?? 0) + 15 * n;
     el.querySelector('.kf-dial')?.style.setProperty('--angle', `${angles[sk]}deg`);
     if (nativeApp) nativeApp.haptic();
@@ -321,7 +354,11 @@ function buildControl(pg, cell) {
     },
     { passive: false },
   );
-  el.repaint = repaint;
+  el.repaint = () => {
+    // Nouvelle valeur du simulateur : l'estimation locale repart de celle-ci (sauf crans en route).
+    if (!inflight && !pendingDelta) estimate = null;
+    repaint();
+  };
   return el;
 }
 

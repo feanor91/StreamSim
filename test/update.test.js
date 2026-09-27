@@ -64,3 +64,29 @@ test('serveur : état de mise à jour exposé et installation déléguée à l�
   }
   assert.equal(listener, null);
 });
+
+test('serveur : relais de l’APK Android pour la tablette (téléchargé une fois, puis servi)', async () => {
+  const dataDir = await fs.mkdtemp(path.join(os.tmpdir(), 'deck-apk-'));
+  const apk = Buffer.from('PK\u0003\u0004 faux apk');
+  let downloads = 0;
+  const apkFetch = async (url) => {
+    if (url.includes('/releases/latest')) {
+      return { ok: true, status: 200, json: async () => ({ tag_name: 'v9.9.9', assets: [{ name: 'StreamSim-Android-9.9.9.apk', size: apk.length, browser_download_url: 'https://example/apk' }] }) };
+    }
+    downloads++;
+    return { ok: true, status: 200, arrayBuffer: async () => apk.buffer.slice(apk.byteOffset, apk.byteOffset + apk.length) };
+  };
+  const deck = await startDeckServer({ port: 0, host: '127.0.0.1', dataDir, dryRun: true, discovery: false, msfs: false, simhub: false, updateCheck: false, apkFetch, log: quiet });
+  try {
+    for (let i = 0; i < 2; i++) {
+      const res = await fetch(`http://127.0.0.1:${deck.port}/api/update/android.apk`);
+      assert.equal(res.status, 200);
+      assert.equal(res.headers.get('content-type'), 'application/vnd.android.package-archive');
+      assert.deepEqual(Buffer.from(await res.arrayBuffer()), apk);
+    }
+    assert.equal(downloads, 1, 'l’APK est gardé en cache sur le PC');
+  } finally {
+    await deck.close();
+    await fs.rm(dataDir, { recursive: true, force: true });
+  }
+});

@@ -6,6 +6,7 @@ import android.app.AlertDialog
 import android.content.Intent
 import android.graphics.Color
 import android.net.Uri
+import android.net.wifi.WifiManager
 import android.os.Build
 import android.os.Bundle
 import android.os.Handler
@@ -51,6 +52,17 @@ class MainActivity : Activity() {
     private var updateDialog: AlertDialog? = null
     private var lastUpdateCheck = 0L
 
+    /**
+     * Verrou Wi-Fi « haute performance » tant que l'application est affichée : empêche Android de
+     * mettre le Wi-Fi en économie d'énergie (cause fréquente de coupures sur les tablettes anciennes).
+     */
+    @Suppress("DEPRECATION")
+    private val wifiLock by lazy {
+        (applicationContext.getSystemService(WIFI_SERVICE) as WifiManager)
+            .createWifiLock(WifiManager.WIFI_MODE_FULL_HIGH_PERF, "streamsim-deck")
+            .apply { setReferenceCounted(false) }
+    }
+
     @SuppressLint("SetJavaScriptEnabled")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -79,8 +91,14 @@ class MainActivity : Activity() {
         checkForUpdate(manual = false)
     }
 
+    override fun onPause() {
+        runCatching { if (wifiLock.isHeld) wifiLock.release() }
+        super.onPause()
+    }
+
     override fun onResume() {
         super.onResume()
+        runCatching { wifiLock.acquire() }
         // Retour au premier plan après un long moment : nouvelle recherche de mise à jour.
         if (lastUpdateCheck != 0L && System.currentTimeMillis() - lastUpdateCheck > RECHECK_AFTER) checkForUpdate(manual = false)
         // Retour des réglages « Installer des applis inconnues » : on reprend l'installation.
@@ -185,9 +203,21 @@ class MainActivity : Activity() {
             .setNegativeButton("Annuler") { _, _ -> download?.cancel(true) }
             .show()
         download = io.submit(Runnable {
-            val result = runCatching {
-                Updater.download(this, r.apkUrl) { pct ->
-                    main.post { progress.setMessage(if (pct >= 0) "$pct %" else "Téléchargement en cours…") }
+            var via = ""
+            val show = { pct: Int ->
+                main.post { progress.setMessage(if (pct >= 0) "$via$pct %" else "${via}Téléchargement en cours…") }
+                Unit
+            }
+            // 1) Directement depuis GitHub ; 2) sinon par le PC, qui relaie l'APK sur le réseau local
+            // (Android 7 échoue sur certaines connexions sécurisées de GitHub).
+            val direct = runCatching { Updater.download(this, r.apkUrl, show) }
+            val result = if (direct.isSuccess || Thread.currentThread().isInterrupted) direct else {
+                val pc = current ?: lastServer()
+                if (pc == null) direct else {
+                    via = "Par le PC (${pc.name.ifBlank { pc.host }}) : "
+                    show(-1)
+                    runCatching { Updater.download(this, Updater.relayUrl(pc.host, pc.port), show) }
+                        .recoverCatching { e -> error("${direct.exceptionOrNull()?.message} ; par le PC : ${e.message}") }
                 }
             }
             main.post {

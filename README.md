@@ -105,7 +105,10 @@ d'elle-même** :
   jour », ou clic sur le numéro de version, pour vérifier tout de suite.
 - **Android** : « Installer » télécharge l'APK puis ouvre l'installeur d'Android
   (confirmez « Installer »). Sur Android 8 et plus, autorisez StreamSim à
-  installer des applications la première fois. La vérification est refaite quand
+  installer des applications la première fois. Si la tablette ne peut pas
+  télécharger l'APK depuis GitHub (fréquent sous Android 7), elle le récupère
+  **par le PC**, qui le télécharge et le lui transmet sur le Wi-Fi local : gardez
+  StreamSim lancé et à jour sur le PC. La vérification est refaite quand
   l'application revient au premier plan après 30 minutes.
   « Rechercher une mise à jour » en bas de l'écran de connexion.
 
@@ -260,9 +263,18 @@ relevées dans l'avion (fenêtre *Behaviors* de MSFS 2024) : batterie, sécurit�
 armement, laser, altimètre STD, dégivrage, désembuage, prélèvement d'air moteur,
 coupure de la direction de roue avant, crosse de secours, tablette EFB ; boutons de
 page des écrans **VTLG / VTLD** (gauche, droite, haut, bas) ; molettes d'éclairage
-et de luminosité des écrans (± 5 %, valeur affichée). AzurPoly ne documente pas
+et de luminosité des écrans (de 0 à 100 %, ± 5 % par cran). AzurPoly ne documente pas
 l'écriture de ces variables : si une touche n'a pas d'effet dans le cockpit, c'est
 que l'avion ne fait que lire cette variable pour son affichage.
+
+**Code avionique (événements `H:` et `B:`).** Beaucoup d'interrupteurs du Rafale
+ne changent qu'une variable `L:` pour leur animation : la vraie fonction passe par
+des événements `H:` que SimConnect ne sait pas déclencher. Commande MSFS → mode
+**Code** : saisissez le code affiché par l'Inspector (Ctrl+G sur l'interrupteur),
+par exemple `(>H:AZP_RAF_ALARMS_ACKNOWLEDGE) 1 (>L:AZP_RAF_VTLG_PAGE_SWITCH_L, Boolean)`.
+Il est exécuté par le module gratuit **MobiFlight WASM** (dossier *Community* de
+MSFS, souvent fourni avec les avions complexes) ; le journal indique s'il est
+détecté. Exemple fourni : *VTLG : FAIL (pannes)*.
 
 Le Rafale n'expose pas ses systèmes de cockpit (armement, écrans, pilote
 automatique…) sous forme d'Input Events : ils passent par ses variables `L:`.
@@ -382,6 +394,11 @@ L'indicateur en haut de l'interface de gestion signale si l'envoi est opération
 - Sur la tablette, « Le PC ne répond pas » signifie que la tablette ne joint plus le
   PC : vérifiez le Wi-Fi de la tablette et que StreamSim est lancé sur le PC. Le Deck
   se reconnecte tout seul dès que le réseau revient.
+- Pendant son affichage, l'application Android garde le Wi-Fi en mode « haute
+  performance » (pas de mise en veille). Si le Wi-Fi de la tablette se coupe malgré
+  tout, désactivez l'économie d'énergie du Wi-Fi dans les réglages d'Android
+  (Wi-Fi → Paramètres avancés → « Wi-Fi activé en veille : Toujours »).
+
 - L'application PC tient un **journal** (`streamsim.log`) : menu de l'icône →
   « Ouvrir le journal (diagnostic) ». Joignez-le pour signaler un problème. Une
   erreur imprévue y est enregistrée sans arrêter le serveur.

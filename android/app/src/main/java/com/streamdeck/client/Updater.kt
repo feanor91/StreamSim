@@ -89,8 +89,14 @@ object Updater {
     fun canInstall(context: Context): Boolean =
         Build.VERSION.SDK_INT < Build.VERSION_CODES.O || context.packageManager.canRequestPackageInstalls()
 
+    /** Adresse de l'APK relayé par le PC (serveur StreamSim), par le réseau local. */
+    fun relayUrl(host: String, port: Int) = "http://$host:$port/api/update/android.apk"
+
+    @Suppress("DEPRECATION")
     fun installIntent(context: Context): Intent =
-        Intent(Intent.ACTION_VIEW)
+        // Android 7 à 9 : action d'installation dédiée (l'ouverture générique d'un APK n'est pas
+        // prise en charge par l'installeur de certains fabricants). Android 10 et plus : ACTION_VIEW.
+        Intent(if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) Intent.ACTION_INSTALL_PACKAGE else Intent.ACTION_VIEW)
             .setDataAndType(ApkProvider.uri(context), "application/vnd.android.package-archive")
             .addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_ACTIVITY_NEW_TASK)
 

@@ -3,7 +3,7 @@
 // Input Events (liste, lecture, écriture, abonnement) et l'événement « avion chargé ».
 import { EventEmitter } from 'node:events';
 
-export function fakeSimConnect({ inputs = [], vars = {} } = {}) {
+export function fakeSimConnect({ inputs = [], vars = {}, mobiflight = true } = {}) {
   const calls = [];
   const handle = new EventEmitter();
   const defs = new Map(); // id de définition → nom de variable
@@ -12,6 +12,9 @@ export function fakeSimConnect({ inputs = [], vars = {} } = {}) {
   const inputByHash = new Map(inputs.map((i, n) => [String(BigInt(1000 + n)), i.name]));
   const subscribedInputs = new Set();
   const eventNames = new Map();
+  const clientAreas = new Map(); // id → nom (« MobiFlight.Command »…)
+  const mfCommands = []; // commandes reçues par le faux module MobiFlight
+  let mfResponseReq = null;
 
   class RawBuffer {
     constructor(size) {
@@ -75,6 +78,25 @@ export function fakeSimConnect({ inputs = [], vars = {} } = {}) {
     },
     subscribeInputEvent: (hash) => subscribedInputs.add(String(hash)),
     unsubscribeInputEvent: (hash) => subscribedInputs.delete(String(hash)),
+    // Faux module MobiFlight WASM : exécute « MF.SimVars.Set.<code> » et répond « MF.Pong ».
+    mapClientDataNameToID: (name, id) => clientAreas.set(id, name),
+    addToClientDataDefinition: () => {},
+    requestClientData: (area, req) => {
+      if (clientAreas.get(area) === 'MobiFlight.Response') mfResponseReq = req;
+    },
+    setClientData: (area, def, flags, reserved, size, buf) => {
+      if (!mobiflight || clientAreas.get(area) !== 'MobiFlight.Command') return;
+      const text = buf.toString('utf8').replace(/\0[\s\S]*$/, '');
+      mfCommands.push(text);
+      if (text === 'MF.Ping' && mfResponseReq !== null) {
+        const reply = Buffer.alloc(1024);
+        reply.write('MF.Pong');
+        setImmediate(() => handle.emit('clientData', { requestID: mfResponseReq, data: { readString: (n) => reply.subarray(0, n).toString('utf8') } }));
+      }
+      const m = text.match(/^MF\.SimVars\.Set\.(.*)$/);
+      // Exécution simplifiée : « valeur (>L:NOM, unité) ».
+      if (m) for (const [, v, name] of m[1].matchAll(/(-?[\d.]+)\s+\(>(L:[\w]+)/g)) values[name] = Number(v);
+    },
     subscribeToSystemEvent: () => {},
     requestSystemState: (req) =>
       setImmediate(() => handle.emit('systemState', { requestID: req, dataString: 'SimObjects\\Airplanes\\Faux_Rafale\\aircraft.cfg' })),
@@ -90,6 +112,8 @@ export function fakeSimConnect({ inputs = [], vars = {} } = {}) {
     DataRequestFlag: { DATA_REQUEST_FLAG_CHANGED: 1 },
     EventFlag: { EVENT_FLAG_GROUPID_IS_PRIORITY: 16 },
     RawBuffer,
+    ClientDataPeriod: { ON_SET: 3 },
+    ClientDataRequestFlag: { CLIENT_DATA_REQUEST_FLAG_CHANGED: 1 },
   };
 
   // Le simulateur annonce une nouvelle valeur d'une variable suivie.
@@ -108,5 +132,5 @@ export function fakeSimConnect({ inputs = [], vars = {} } = {}) {
   };
   const sentEvents = () => calls.filter((c) => c[0] === 'send').map((c) => [c[5], c[2]]);
 
-  return { lib, handle, calls, values, inputValues, emitValue, emitInput, sentEvents };
+  return { lib, handle, calls, values, inputValues, emitValue, emitInput, sentEvents, mfCommands };
 }

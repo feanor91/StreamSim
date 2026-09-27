@@ -139,6 +139,7 @@ export async function runAction(executor, action, depth = 0, ctx = {}) {
         if (!action.input) throw new Error('Aucune commande de cockpit (Input Event) choisie.');
         return applyOperation(action, () => ctx.msfs.readInput(action.input), (v) => ctx.msfs.setInput(action.input, v));
       }
+      if (kind === 'code') return ctx.msfs.execCode(action.code);
       if (!action.event) throw new Error('Aucun événement MSFS choisi.');
       return ctx.msfs.send(action.event, action.value);
     }
