@@ -6,6 +6,7 @@ import android.app.AlertDialog
 import android.content.Intent
 import android.graphics.Color
 import android.net.Uri
+import android.net.wifi.WifiManager
 import android.os.Build
 import android.os.Bundle
 import android.os.Handler
@@ -51,6 +52,17 @@ class MainActivity : Activity() {
     private var updateDialog: AlertDialog? = null
     private var lastUpdateCheck = 0L
 
+    /**
+     * Verrou Wi-Fi « haute performance » tant que l'application est affichée : empêche Android de
+     * mettre le Wi-Fi en économie d'énergie (cause fréquente de coupures sur les tablettes anciennes).
+     */
+    @Suppress("DEPRECATION")
+    private val wifiLock by lazy {
+        (applicationContext.getSystemService(WIFI_SERVICE) as WifiManager)
+            .createWifiLock(WifiManager.WIFI_MODE_FULL_HIGH_PERF, "streamsim-deck")
+            .apply { setReferenceCounted(false) }
+    }
+
     @SuppressLint("SetJavaScriptEnabled")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -79,8 +91,14 @@ class MainActivity : Activity() {
         checkForUpdate(manual = false)
     }
 
+    override fun onPause() {
+        runCatching { if (wifiLock.isHeld) wifiLock.release() }
+        super.onPause()
+    }
+
     override fun onResume() {
         super.onResume()
+        runCatching { wifiLock.acquire() }
         // Retour au premier plan après un long moment : nouvelle recherche de mise à jour.
         if (lastUpdateCheck != 0L && System.currentTimeMillis() - lastUpdateCheck > RECHECK_AFTER) checkForUpdate(manual = false)
         // Retour des réglages « Installer des applis inconnues » : on reprend l'installation.

@@ -394,6 +394,11 @@ L'indicateur en haut de l'interface de gestion signale si l'envoi est opération
 - Sur la tablette, « Le PC ne répond pas » signifie que la tablette ne joint plus le
   PC : vérifiez le Wi-Fi de la tablette et que StreamSim est lancé sur le PC. Le Deck
   se reconnecte tout seul dès que le réseau revient.
+- Pendant son affichage, l'application Android garde le Wi-Fi en mode « haute
+  performance » (pas de mise en veille). Si le Wi-Fi de la tablette se coupe malgré
+  tout, désactivez l'économie d'énergie du Wi-Fi dans les réglages d'Android
+  (Wi-Fi → Paramètres avancés → « Wi-Fi activé en veille : Toujours »).
+
 - L'application PC tient un **journal** (`streamsim.log`) : menu de l'icône →
   « Ouvrir le journal (diagnostic) ». Joignez-le pour signaler un problème. Une
   erreur imprévue y est enregistrée sans arrêter le serveur.
