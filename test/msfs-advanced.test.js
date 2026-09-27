@@ -179,7 +179,7 @@ test('Rafale : caches posés puis retirés, état lu dans le simulateur', async 
 
 test('Rafale : bouton poussoir (1 puis 0) et molette de luminosité bornée', async () => {
   const { RAFALE_COCKPIT_PRESETS } = await import('../shared/msfs.js');
-  const sim = fakeSimConnect({ vars: { 'L:AZP_RAF_VTLG_PAGE_SWITCH_R': 0, 'L:AZP_RAF_AVIONICS_BRIGHTNESS_VTLG': 90 } });
+  const sim = fakeSimConnect({ vars: { 'L:AZP_RAF_VTLG_PAGE_SWITCH_R': 0, 'L:AZP_RAF_AVIONICS_BRIGHTNESS_VTLG': 0.9 } });
   const msfs = createMsfs({ log: quiet, load: async () => sim.lib });
   msfs.start();
   await tick();
@@ -188,7 +188,31 @@ test('Rafale : bouton poussoir (1 puis 0) et molette de luminosité bornée', as
   const writes = sim.calls.filter((c) => c[0] === 'set' && c[1] === 'L:AZP_RAF_VTLG_PAGE_SWITCH_R').map((c) => c[2]);
   assert.deepEqual(writes, [1, 0]);
   const dial = RAFALE_COCKPIT_PRESETS.find((p) => p.label === 'Luminosité VTLG');
-  for (let i = 0; i < 4; i++) await runAction({}, dial.action.inc, 0, { msfs });
-  assert.equal(sim.values['L:AZP_RAF_AVIONICS_BRIGHTNESS_VTLG'], 100);
+  // Écrans du Rafale : 0 à 1 (1 = 100 %), pas de 5 %, sans dépasser 1.
+  await runAction({}, dial.action.dec, 0, { msfs });
+  assert.equal(sim.values['L:AZP_RAF_AVIONICS_BRIGHTNESS_VTLG'], 0.85);
+  for (let i = 0; i < 5; i++) await runAction({}, dial.action.inc, 0, { msfs });
+  assert.equal(sim.values['L:AZP_RAF_AVIONICS_BRIGHTNESS_VTLG'], 1);
+  const { formatDisplay } = await import('../shared/controls.js');
+  assert.equal(formatDisplay(1, dial.action.display), '100 %');
+  assert.equal(formatDisplay(0.35, dial.action.display), '35 %');
   msfs.close();
+});
+
+test('fin de vol : connexion coupée pendant un abonnement, sans erreur non traitée', async () => {
+  const unhandled = [];
+  const onUnhandled = (e) => unhandled.push(e);
+  process.on('unhandledRejection', onUnhandled);
+  const sim = fakeSimConnect({ inputs: [{ name: 'LANDING_GEAR_GEAR', value: 1 }] });
+  const msfs = createMsfs({ log: quiet, load: async () => sim.lib });
+  msfs.start();
+  await tick();
+  msfs.watch([{ input: 'LANDING_GEAR_GEAR' }]);
+  sim.handle.emit('quit'); // le simulateur coupe la connexion au milieu de l'abonnement
+  await tick(100);
+  assert.equal(msfs.status.connected, false);
+  await assert.rejects(msfs.setInput('LANDING_GEAR_GEAR', 0), /pas connecté/);
+  process.off('unhandledRejection', onUnhandled);
+  msfs.close();
+  assert.deepEqual(unhandled, []);
 });

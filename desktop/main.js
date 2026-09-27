@@ -9,6 +9,7 @@ import { createRequire } from 'node:module';
 import updaterPkg from 'electron-updater';
 import { startDeckServer, lanAddresses } from '../server/app.js';
 import { createReleaseChecker } from '../server/update.js';
+import { createLogger, keepAlive } from '../server/logger.js';
 import { RELEASES_URL } from '../shared/version.js';
 
 const { autoUpdater } = updaterPkg;
@@ -25,6 +26,7 @@ let tray = null;
 let quitting = false;
 let trayHintShown = false;
 let updater = null;
+let log = console;
 
 if (!app.requestSingleInstanceLock()) {
   app.quit();
@@ -73,13 +75,16 @@ async function boot() {
   // Identifiant technique conservé depuis « StreamDeck » : notifications, lancement au démarrage
   // et installateur (mise à jour sur place) le reconnaissent.
   app.setAppUserModelId('com.streamdeck.clone');
+  log = createLogger(path.join(app.getPath('userData'), 'logs', 'streamsim.log'));
+  keepAlive(log);
+  log.log(`StreamSim ${app.getVersion()} démarre (${process.platform}).`);
   migrateFromStreamDeck();
   migrateLoginItem();
   prepareRegistryHelper();
   updater = createUpdater();
   updater.onChange(onUpdateChange);
   try {
-    deck = await startDeckServer({ port: PORT, dataDir: path.join(app.getPath('userData'), 'data'), updater });
+    deck = await startDeckServer({ port: PORT, dataDir: path.join(app.getPath('userData'), 'data'), updater, log });
   } catch (e) {
     if (e.code !== 'EADDRINUSE' || !(await isDeckServer())) {
       dialog.showErrorBox(
@@ -357,6 +362,7 @@ function refreshTrayMenu() {
         visible: process.platform !== 'linux',
         click: (item) => app.setLoginItemSettings({ openAtLogin: item.checked, args: ['--hidden'] }),
       },
+      { label: 'Ouvrir le journal (diagnostic)', click: () => log.file && shell.showItemInFolder(log.file) },
       { type: 'separator' },
       { label: deck ? 'Quitter StreamSim' : 'Quitter (serveur externe conservé)', click: quit },
     ]),

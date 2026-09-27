@@ -4,11 +4,17 @@ async function request(method, url, body) {
   // Le serveur exige du JSON pour toute requête qui modifie quelque chose (protection
   // contre les requêtes envoyées par d'autres sites) : corps vide « {} » si besoin.
   const write = method !== 'GET';
-  const res = await fetch(url, {
-    method,
-    headers: write ? { 'Content-Type': 'application/json' } : {},
-    body: write ? JSON.stringify(body ?? {}) : undefined,
-  });
+  let res;
+  try {
+    res = await fetch(url, {
+      method,
+      headers: write ? { 'Content-Type': 'application/json' } : {},
+      body: write ? JSON.stringify(body ?? {}) : undefined,
+    });
+  } catch {
+    // « Failed to fetch » : le PC ne répond pas du tout (application fermée, Wi-Fi…).
+    throw new Error('Le PC ne répond pas : vérifiez que StreamSim est lancé et que le Wi-Fi est connecté.');
+  }
   const data = await res.json().catch(() => ({}));
   if (!res.ok) throw new Error(data.error || `Erreur ${res.status}`);
   return data;

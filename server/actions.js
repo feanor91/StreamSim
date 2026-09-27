@@ -50,7 +50,8 @@ export async function applyOperation(action, read, write) {
     return write(Math.abs(current - on) < 1e-6 ? off : on);
   }
   if (op === 'add') {
-    let next = current + value;
+    // Arrondi : des pas décimaux (0,05…) ne doivent pas accumuler d'erreurs (0,35000000000000003).
+    let next = Math.round((current + value) * 1e6) / 1e6;
     const min = action.min === undefined || action.min === '' ? null : Number(action.min);
     const max = action.max === undefined || action.max === '' ? null : Number(action.max);
     if (action.wrap && min !== null && max !== null && max > min) {
