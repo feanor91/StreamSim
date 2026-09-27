@@ -16,3 +16,13 @@ test('journal : lignes horodatées dans un fichier', async () => {
   assert.match(text, /ERROR échec Error: boum/);
   await fs.rm(dir, { recursive: true, force: true });
 });
+
+test('journal : heure locale avec le décalage horaire', async () => {
+  const { localStamp } = await import('../server/logger.js');
+  const d = new Date(2026, 8, 27, 14, 10, 35, 942);
+  const off = -d.getTimezoneOffset();
+  const tz = `${off >= 0 ? '+' : '-'}${String(Math.floor(Math.abs(off) / 60)).padStart(2, '0')}:${String(Math.abs(off) % 60).padStart(2, '0')}`;
+  assert.equal(localStamp(d), `2026-09-27 14:10:35.942 ${tz}`);
+  assert.equal(TZ_CHECK(localStamp(d)), true);
+});
+const TZ_CHECK = (s) => /^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}\.\d{3} [+-]\d{2}:\d{2}$/.test(s);

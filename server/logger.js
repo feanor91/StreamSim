@@ -16,7 +16,7 @@ export function createLogger(file, { console: out = console } = {}) {
 
   const write = (level, args) => {
     const text = args.map((a) => (a instanceof Error ? a.stack || a.message : typeof a === 'string' ? a : inspect(a))).join(' ');
-    const line = `${new Date().toISOString()} ${level.padEnd(5)} ${text}\n`;
+    const line = `${localStamp()} ${level.padEnd(5)} ${text}\n`;
     try {
       if (size + line.length > MAX_BYTES) {
         fs.renameSync(file, `${file}.1`);
@@ -35,6 +35,15 @@ export function createLogger(file, { console: out = console } = {}) {
     warn: (...a) => (out.warn(...a), write('WARN', a)),
     error: (...a) => (out.error(...a), write('ERROR', a)),
   };
+}
+
+/** Heure locale du PC avec son décalage (ex. « 2026-09-27 14:10:35.942 +02:00 »). */
+export function localStamp(d = new Date()) {
+  const p = (n, w = 2) => String(n).padStart(w, '0');
+  const off = -d.getTimezoneOffset();
+  const sign = off >= 0 ? '+' : '-';
+  const tz = `${sign}${p(Math.floor(Math.abs(off) / 60))}:${p(Math.abs(off) % 60)}`;
+  return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())} ${p(d.getHours())}:${p(d.getMinutes())}:${p(d.getSeconds())}.${p(d.getMilliseconds(), 3)} ${tz}`;
 }
 
 /**
