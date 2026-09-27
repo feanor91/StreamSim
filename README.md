@@ -437,6 +437,16 @@ cd android && ./gradlew assembleRelease   # APK dans android/app/build/outputs/a
 
 Le projet `android/` s'ouvre aussi directement dans Android Studio.
 
+### Numéros de version
+
+- `package.json` : version de la publication (application PC, serveur, Deck affiché
+  sur la tablette, qui est servi par le PC).
+- `android/app/build.gradle.kts` (`versionName`, `versionCode`) : version propre à
+  l'application Android, qui ne change que si le code de `android/` change. L'APK
+  publié porte ce numéro (`StreamSim-Android-x.y.z.apk`) et la tablette ne propose
+  une mise à jour que s'il est plus récent que le sien. `versionCode` doit toujours
+  augmenter quand l'application Android change.
+
 ### Signature de l'APK
 
 Toutes les versions publiées doivent être signées avec **la même clé**, sinon
