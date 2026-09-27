@@ -1,6 +1,6 @@
 import http from 'node:http';
 import fs from 'node:fs/promises';
-import { readFileSync } from 'node:fs';
+import { readFileSync, createReadStream } from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -11,7 +11,7 @@ import { runAction, toggleAction } from './actions.js';
 import { ToggleStates } from './states.js';
 import { stateKey } from '../shared/layout.js';
 import { startDiscovery } from './discovery.js';
-import { createReleaseChecker } from './update.js';
+import { createReleaseChecker, createApkRelay } from './update.js';
 import { createMsfs } from './msfs.js';
 import { createSimhub } from './simhub.js';
 import { normalizeVar, defaultUnit } from '../shared/msfs.js';
@@ -139,6 +139,7 @@ export async function startDeckServer({
   simhubPort,
   updater: customUpdater, // application PC : téléchargement et installation (electron-updater)
   updateCheck = true, // recherche automatique des nouvelles versions sur GitHub
+  apkFetch, // tests : remplace l'accès à GitHub pour le relais de l'APK Android
   log = console,
 } = {}) {
   const store = new Store(dataDir);
@@ -318,6 +319,7 @@ export async function startDeckServer({
 
   const updater = customUpdater ?? createReleaseChecker({ current: VERSION, log, auto: updateCheck });
   const stopUpdateEvents = updater.onChange((u) => broadcast('update', u));
+  const apkRelay = createApkRelay({ dir: path.join(dataDir, 'updates'), log, ...(apkFetch ? { fetchImpl: apkFetch } : {}) });
 
   function broadcast(event, data) {
     const payload = `event: ${event}\ndata: ${JSON.stringify(data)}\n\n`;
@@ -420,6 +422,24 @@ export async function startDeckServer({
       case 'POST /api/update/check':
         requireAdmin(req);
         return send(res, 200, await updater.check());
+
+      // Mise à jour de la tablette par le PC : dernière application Android publiée.
+      case 'GET /api/update/android.apk': {
+        let apk;
+        try {
+          apk = await apkRelay.latest();
+        } catch (e) {
+          throw httpError(`Application Android indisponible : ${e.message}`, 502);
+        }
+        res.writeHead(200, {
+          'Content-Type': 'application/vnd.android.package-archive',
+          'Content-Length': apk.size,
+          'Content-Disposition': `attachment; filename="${apk.name}"`,
+          'Cache-Control': 'no-store',
+        });
+        createReadStream(apk.file).pipe(res);
+        return;
+      }
 
       case 'POST /api/update/install':
         requireAdmin(req);

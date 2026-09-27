@@ -105,7 +105,10 @@ d'elle-même** :
   jour », ou clic sur le numéro de version, pour vérifier tout de suite.
 - **Android** : « Installer » télécharge l'APK puis ouvre l'installeur d'Android
   (confirmez « Installer »). Sur Android 8 et plus, autorisez StreamSim à
-  installer des applications la première fois. La vérification est refaite quand
+  installer des applications la première fois. Si la tablette ne peut pas
+  télécharger l'APK depuis GitHub (fréquent sous Android 7), elle le récupère
+  **par le PC**, qui le télécharge et le lui transmet sur le Wi-Fi local : gardez
+  StreamSim lancé et à jour sur le PC. La vérification est refaite quand
   l'application revient au premier plan après 30 minutes.
   « Rechercher une mise à jour » en bas de l'écran de connexion.
 

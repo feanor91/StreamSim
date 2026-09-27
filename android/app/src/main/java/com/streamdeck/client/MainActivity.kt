@@ -185,9 +185,21 @@ class MainActivity : Activity() {
             .setNegativeButton("Annuler") { _, _ -> download?.cancel(true) }
             .show()
         download = io.submit(Runnable {
-            val result = runCatching {
-                Updater.download(this, r.apkUrl) { pct ->
-                    main.post { progress.setMessage(if (pct >= 0) "$pct %" else "Téléchargement en cours…") }
+            var via = ""
+            val show = { pct: Int ->
+                main.post { progress.setMessage(if (pct >= 0) "$via$pct %" else "${via}Téléchargement en cours…") }
+                Unit
+            }
+            // 1) Directement depuis GitHub ; 2) sinon par le PC, qui relaie l'APK sur le réseau local
+            // (Android 7 échoue sur certaines connexions sécurisées de GitHub).
+            val direct = runCatching { Updater.download(this, r.apkUrl, show) }
+            val result = if (direct.isSuccess || Thread.currentThread().isInterrupted) direct else {
+                val pc = current ?: lastServer()
+                if (pc == null) direct else {
+                    via = "Par le PC (${pc.name.ifBlank { pc.host }}) : "
+                    show(-1)
+                    runCatching { Updater.download(this, Updater.relayUrl(pc.host, pc.port), show) }
+                        .recoverCatching { e -> error("${direct.exceptionOrNull()?.message} ; par le PC : ${e.message}") }
                 }
             }
             main.post {
