@@ -278,7 +278,8 @@ détecté. Touches fournies (groupe *Rafale : cockpit*) : boutons de page du VTL
 **FAIL**, **AP** et **WPN**, et la **molette de visualisation** gauche (tourner =
 régler altitudes, vitesses…, appui = valider). Les touches marquées « animation
 seule » ne font que bouger l'interrupteur : envoyez une capture de l'Inspector pour
-les compléter.
+les compléter. Le VTLD (écran de droite) est tactile : il ne présente aucune
+commande externe, et ne peut donc pas être piloté depuis le Deck.
 
 Le Rafale n'expose pas ses systèmes de cockpit (armement, écrans, pilote
 automatique…) sous forme d'Input Events : ils passent par ses variables `L:`.

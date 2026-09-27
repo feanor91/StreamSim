@@ -533,13 +533,8 @@ export const RAFALE_COCKPIT_PRESETS = [
   rafPage('VTLG : WPN (armement)', ['AZP_RAF_VTLG_SWITCH_MOVED_WEAPONS'], 'AZP_RAF_VTLG_PAGE_SWITCH_UP', 'WPN'),
   // Molette de visualisation (gauche) : tourner = régler (altitudes, vitesses…), appui = valider.
   rafKnob('Molette de visualisation gauche', 'AZP_RAF_AVIONICS_VISUALISATION_KNOB_LEFT', 'VISU G'),
-  // Côté droit supposé symétrique (non relevé) : à confirmer dans l'Inspector.
-  rafKnob('Molette de visualisation droite (à vérifier)', 'AZP_RAF_AVIONICS_VISUALISATION_KNOB_RIGHT', 'VISU D'),
+  // Le VTLD (droite) est un écran tactile, sans molette : aucune commande externe connue.
   rafPush('VTLG : bas (animation seule)', 'AZP_RAF_VTLG_PAGE_SWITCH_DN', 'VTLG ▼'),
-  rafPush('VTLD : page gauche (animation seule)', 'AZP_RAF_VTLD_PAGE_SWITCH_L', 'VTLD ◀'),
-  rafPush('VTLD : page droite (animation seule)', 'AZP_RAF_VTLD_PAGE_SWITCH_R', 'VTLD ▶'),
-  rafPush('VTLD : haut (animation seule)', 'AZP_RAF_VTLD_PAGE_SWITCH_UP', 'VTLD ▲'),
-  rafPush('VTLD : bas (animation seule)', 'AZP_RAF_VTLD_PAGE_SWITCH_DN', 'VTLD ▼'),
   rafDial('Éclairage des panneaux', 'AZP_RAF_LIGHTING_PANEL_BACKLIGHT_INTENSITY', 'Panneaux', { max: 1 }),
   rafDial('Éclairage des voyants', 'AZP_RAF_LIGHTING_INTERIOR_INDICATORS_INTENSITY', 'Voyants', { max: 1 }),
   rafDial('Luminosité VTLG', 'AZP_RAF_AVIONICS_BRIGHTNESS_VTLG', 'Lum. VTLG', { max: 1 }),

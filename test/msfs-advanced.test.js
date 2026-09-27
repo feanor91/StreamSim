@@ -181,13 +181,13 @@ test('Rafale : caches posés puis retirés, état lu dans le simulateur', async 
 
 test('Rafale : bouton poussoir (1 puis 0) et molette de luminosité bornée', async () => {
   const { RAFALE_COCKPIT_PRESETS } = await import('../shared/msfs.js');
-  const sim = fakeSimConnect({ vars: { 'L:AZP_RAF_VTLD_PAGE_SWITCH_R': 0, 'L:AZP_RAF_AVIONICS_BRIGHTNESS_VTLG': 0.9 } });
+  const sim = fakeSimConnect({ vars: { 'L:AZP_RAF_VTLG_PAGE_SWITCH_DN': 0, 'L:AZP_RAF_AVIONICS_BRIGHTNESS_VTLG': 0.9 } });
   const msfs = createMsfs({ log: quiet, load: async () => sim.lib });
   msfs.start();
   await tick();
-  const push = RAFALE_COCKPIT_PRESETS.find((p) => p.label === 'VTLD : page droite (animation seule)');
+  const push = RAFALE_COCKPIT_PRESETS.find((p) => p.label === 'VTLG : bas (animation seule)');
   await runAction({}, push.action, 0, { msfs });
-  const writes = sim.calls.filter((c) => c[0] === 'set' && c[1] === 'L:AZP_RAF_VTLD_PAGE_SWITCH_R').map((c) => c[2]);
+  const writes = sim.calls.filter((c) => c[0] === 'set' && c[1] === 'L:AZP_RAF_VTLG_PAGE_SWITCH_DN').map((c) => c[2]);
   assert.deepEqual(writes, [1, 0]);
   const dial = RAFALE_COCKPIT_PRESETS.find((p) => p.label === 'Luminosité VTLG');
   // Écrans du Rafale : 0 à 1 (1 = 100 %), pas de 5 %, sans dépasser 1.
