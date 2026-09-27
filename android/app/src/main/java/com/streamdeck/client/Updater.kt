@@ -31,12 +31,18 @@ object Updater {
     /** Appel réseau bloquant : à lancer hors du fil principal. */
     fun latest(): Release {
         val json = JSONObject(get("https://api.github.com/repos/$REPO/releases/latest"))
-        val version = json.getString("tag_name").removePrefix("v")
+        var version = json.getString("tag_name").removePrefix("v")
         val assets = json.optJSONArray("assets")
         var apk = ""
         for (i in 0 until (assets?.length() ?: 0)) {
             val a = assets!!.getJSONObject(i)
-            if (a.optString("name").endsWith(".apk")) apk = a.optString("browser_download_url")
+            val name = a.optString("name")
+            if (!name.endsWith(".apk")) continue
+            apk = a.optString("browser_download_url")
+            // Version propre à l'application Android, portée par le nom de l'APK
+            // (« StreamSim-Android-0.9.9.apk ») : une publication qui ne change que le PC
+            // ne déclenche pas de mise à jour sur la tablette.
+            Regex("-(\\d+\\.\\d+\\.\\d+)\\.apk$").find(name)?.let { version = it.groupValues[1] }
         }
         return Release(version, apk, json.optString("html_url", RELEASES_PAGE))
     }

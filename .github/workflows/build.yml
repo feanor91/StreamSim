@@ -82,7 +82,10 @@ jobs:
           ./gradlew --no-daemon assembleRelease
       - name: Renommer l'APK
         run: |
-          VERSION=$(node -p "require('./package.json').version")
+          # Numéro propre à l'application Android (versionName) : la tablette ne propose une mise
+          # à jour que si l'application Android elle-même a changé.
+          VERSION=$(grep -oP 'versionName = "\K[^"]+' android/app/build.gradle.kts)
+          test -n "$VERSION"
           mkdir -p out
           cp android/app/build/outputs/apk/release/app-release.apk "out/StreamSim-Android-$VERSION.apk"
       - name: Vérifier la signature de l'APK
