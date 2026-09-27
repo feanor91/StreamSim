@@ -57,6 +57,8 @@ export function fakeSimConnect({ inputs = [], vars = {}, mobiflight = true } = {
       calls.push(['set', name, values[name]]);
     },
     enumerateInputEvents: (req) => {
+      // Avion en cours de chargement : MSFS ne répond pas (exception SimConnect).
+      if (!fake.inputsReady) return setImmediate(() => handle.emit('exception', { exceptionName: 'ERROR', sendId: 35 }));
       setImmediate(() =>
         handle.emit('inputEventsList', {
           requestID: req,
@@ -132,5 +134,6 @@ export function fakeSimConnect({ inputs = [], vars = {}, mobiflight = true } = {
   };
   const sentEvents = () => calls.filter((c) => c[0] === 'send').map((c) => [c[5], c[2]]);
 
-  return { lib, handle, calls, values, inputValues, emitValue, emitInput, sentEvents, mfCommands };
+  const fake = { lib, handle, calls, values, inputValues, emitValue, emitInput, sentEvents, mfCommands, inputsReady: true };
+  return fake;
 }
