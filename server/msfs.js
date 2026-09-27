@@ -63,6 +63,31 @@ export function createMsfs({
   const MF_RESP_DEF = 910004;
   const MF_RESP_REQ = 910005;
   let mf = null; // { pong: bool } une fois les canaux déclarés sur la connexion en cours
+  // Paquets envoyés récemment (numéro → commande) : une « Exception SimConnect » du journal
+  // indique ainsi quelle commande l'a provoquée.
+  const sentPackets = new Map();
+  const describe = (args) =>
+    args
+      .map((a) => (Buffer.isBuffer(a) ? JSON.stringify(a.toString('utf8').replace(/\0[\s\S]*$/, '').slice(0, 120)) : typeof a === 'string' ? JSON.stringify(a) : typeof a === 'object' && a !== null ? '{…}' : String(a)))
+      .join(', ');
+  const QUIET = new Set(['on', 'off', 'once', 'emit', 'addListener', 'removeListener', 'removeAllListeners', 'close', 'listenerCount']);
+  function track(raw) {
+    return new Proxy(raw, {
+      get(target, prop) {
+        const v = Reflect.get(target, prop);
+        if (typeof v !== 'function') return v;
+        if (typeof prop !== 'string' || QUIET.has(prop)) return v.bind(target);
+        return (...args) => {
+          const id = v.apply(target, args);
+          if (typeof id === 'number') {
+            sentPackets.set(id, `${prop}(${describe(args)})`);
+            if (sentPackets.size > 300) sentPackets.delete(sentPackets.keys().next().value);
+          }
+          return id;
+        };
+      },
+    });
+  }
   let inputRetry = null; // nouvel essai de lecture des commandes de cockpit (avion en chargement)
   const INPUT_RETRIES = 6;
 
@@ -216,6 +241,7 @@ export function createMsfs({
 
   // --- Connexion ---------------------------------------------------------------------------
   function dropConnection(reason) {
+    if (handle && mf && !mf.pong) log.warn?.('[MSFS] Connexion coupée avant toute réponse du module MobiFlight (juste après l’envoi du code avionique).');
     if (handle) log.log?.(`[MSFS] Déconnecté : ${reason} Nouvelle tentative dans ${Math.round(retryMs / 1000)} s.`);
     handle = null;
     mf = null;
@@ -261,7 +287,8 @@ export function createMsfs({
         lib.open(APP_NAME, lib.Protocol.KittyHawk),
         new Promise((_, reject) => setTimeout(() => reject(new Error('délai dépassé')), 15000).unref?.()),
       ]);
-      handle = h;
+      handle = track(h);
+      const conn = handle;
       h.on('simObjectData', (data) => {
         const once = oneShots.get(data.requestID);
         if (once) {
@@ -312,13 +339,16 @@ export function createMsfs({
           }
         } catch {}
       });
-      h.on('exception', (e) => log.warn?.(`[MSFS] Exception SimConnect ${e.exceptionName ?? e.exception} (paquet ${e.sendId})`));
+      h.on('exception', (e) => {
+        const what = sentPackets.get(e.sendId);
+        log.warn?.(`[MSFS] Exception SimConnect ${e.exceptionName ?? e.exception} (paquet ${e.sendId}${what ? ` : ${what}` : ''})`);
+      });
       h.on('quit', () => dropConnection('Simulateur fermé.'));
-      h.on('close', () => handle === h && dropConnection('Connexion au simulateur perdue.'));
+      h.on('close', () => handle === conn && dropConnection('Connexion au simulateur perdue.'));
       h.on('error', (e) => {
         log.warn?.(`[MSFS] ${e.message}`);
         // Tuyau coupé (fin de vol, simulateur fermé) : on repart sur une connexion neuve.
-        if (handle === h && /EPIPE|ECONNRESET|EOF|ended|destroyed/i.test(`${e.code ?? ''} ${e.message ?? ''}`)) {
+        if (handle === conn && /EPIPE|ECONNRESET|EOF|ended|destroyed/i.test(`${e.code ?? ''} ${e.message ?? ''}`)) {
           dropConnection('Connexion au simulateur interrompue.');
           try {
             h.close();
@@ -437,6 +467,7 @@ export function createMsfs({
         }, 3000).unref?.();
       }
       sendMf(`MF.SimVars.Set.${c}`);
+      log.log?.(`[MSFS] Code avionique envoyé au module MobiFlight : ${c}`);
     },
 
     /** Commandes de cockpit (Input Events) de l'avion chargé. */

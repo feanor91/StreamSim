@@ -270,3 +270,20 @@ test('coupure « EPIPE » : reconnexion automatique au simulateur', async () => 
   assert.equal(opens, 2);
   msfs.close();
 });
+
+test('journal : une exception SimConnect indique la commande qui l’a provoquée', async () => {
+  const warnings = [];
+  const sim = fakeSimConnect({});
+  let n = 100;
+  // Comme node-simconnect : chaque envoi renvoie le numéro du paquet.
+  const origSend = sim.handle.transmitClientEvent;
+  sim.handle.mapClientEventToSimEvent = ((orig) => (...a) => (orig(...a), ++n))(sim.handle.mapClientEventToSimEvent);
+  sim.handle.transmitClientEvent = (...a) => (origSend(...a), ++n);
+  const msfs = createMsfs({ log: { log() {}, warn: (m) => warnings.push(m), error() {} }, load: async () => sim.lib });
+  msfs.start();
+  await tick();
+  await msfs.send('GEAR_TOGGLE');
+  sim.handle.emit('exception', { exceptionName: 'UNRECOGNIZED_ID', sendId: n });
+  assert.match(warnings.at(-1), /paquet \d+ : transmitClientEvent\(/);
+  msfs.close();
+});
