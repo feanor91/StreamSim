@@ -287,15 +287,19 @@ test('journal : une exception SimConnect indique la commande qui l’a provoqué
 test('Rafale : molette de visualisation (événements H: en tournant, validation à l’appui)', async () => {
   const { RAFALE_COCKPIT_PRESETS } = await import('../shared/msfs.js');
   const sim = fakeSimConnect({});
-  const msfs = createMsfs({ log: quiet, load: async () => sim.lib });
+  const msfs = createMsfs({ log: quiet, load: async () => sim.lib, mfGapMs: 2 });
   msfs.start();
   await tick();
   const knob = RAFALE_COCKPIT_PRESETS.find((p) => p.label === 'Molette de visualisation gauche').action;
-  await runAction({}, knob.inc, 0, { msfs });
+  // Trois crans dans le même sens : chacun doit être vu par le module (commande identique répétée).
+  for (let i = 0; i < 3; i++) await runAction({}, knob.inc, 0, { msfs });
   await runAction({}, knob.dec, 0, { msfs });
   await runAction({}, knob.press, 0, { msfs });
+  const inc = 'MF.SimVars.Set.(>H:AZP_RAF_AVIONICS_VISUALISATION_KNOB_LEFT_INC)';
   assert.deepEqual(sim.mfCommands.slice(1), [
-    'MF.SimVars.Set.(>H:AZP_RAF_AVIONICS_VISUALISATION_KNOB_LEFT_INC)',
+    inc,
+    inc,
+    inc,
     'MF.SimVars.Set.(>H:AZP_RAF_AVIONICS_VISUALISATION_KNOB_LEFT_DEC)',
     'MF.SimVars.Set.(>H:AZP_RAF_AVIONICS_VISUALISATION_KNOB_LEFT_PUSHED)',
   ]);

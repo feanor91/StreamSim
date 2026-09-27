@@ -15,6 +15,7 @@ export function fakeSimConnect({ inputs = [], vars = {}, mobiflight = true } = {
   const clientAreas = new Map(); // id → nom (« MobiFlight.Command »…)
   const mfCommands = []; // commandes reçues par le faux module MobiFlight
   let mfResponseReq = null;
+  let lastMf = '';
 
   class RawBuffer {
     constructor(size) {
@@ -89,6 +90,10 @@ export function fakeSimConnect({ inputs = [], vars = {}, mobiflight = true } = {
     setClientData: (area, def, flags, reserved, size, buf) => {
       if (!mobiflight || clientAreas.get(area) !== 'MobiFlight.Command') return;
       const text = buf.toString('utf8').replace(/\0[\s\S]*$/, '');
+      // Comme le vrai module (lecture « si modifié ») : une commande identique à la précédente est ignorée.
+      if (text === lastMf) return;
+      lastMf = text;
+      if (text === 'MF.DummyCmd') return;
       mfCommands.push(text);
       if (text === 'MF.Ping' && mfResponseReq !== null) {
         const reply = Buffer.alloc(1024);

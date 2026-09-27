@@ -24,6 +24,7 @@ export function createMsfs({
   retryMs = RETRY_MS, // délais réglables pour les tests
   inputListTimeoutMs = 6000,
   inputRetryMs = 5000,
+  mfGapMs = 35,
 } = {}) {
   let lib = null;
   let handle = null;
@@ -237,6 +238,21 @@ export function createMsfs({
     const buf = Buffer.alloc(MF_SIZE);
     buf.write(text, 'utf8');
     handle.setClientData(MF_CMD_AREA, MF_CMD_DEF, 0, 1, MF_SIZE, buf);
+  }
+
+  // Le module MobiFlight ne lit le canal de commandes qu'une fois par image, et seulement quand
+  // son contenu change : les envois sont espacés, et chaque commande est suivie d'une commande
+  // neutre (« MF.DummyCmd ») pour que la même commande répétée (crans d'une molette) soit vue.
+  const MF_GAP_MS = mfGapMs;
+  let mfQueue = Promise.resolve();
+  function queueMf(text) {
+    const job = mfQueue.then(async () => {
+      requireHandle();
+      sendMf(text);
+      await new Promise((r) => setTimeout(r, MF_GAP_MS));
+    });
+    mfQueue = job.catch(() => {});
+    return job;
   }
 
   // --- Connexion ---------------------------------------------------------------------------
@@ -460,13 +476,14 @@ export function createMsfs({
           handle.addToClientDataDefinition(MF_RESP_DEF, 0, MF_SIZE, 0, 0);
           handle.requestClientData(MF_RESP_AREA, MF_RESP_REQ, MF_RESP_DEF, lib.ClientDataPeriod?.ON_SET ?? 3, lib.ClientDataRequestFlag?.CLIENT_DATA_REQUEST_FLAG_CHANGED ?? 1);
         } catch {}
-        sendMf('MF.Ping');
+        queueMf('MF.Ping').catch(() => {});
         const probe = mf;
         setTimeout(() => {
           if (mf === probe && !probe.pong) log.warn?.('[MSFS] Le module MobiFlight WASM ne répond pas : est-il installé dans le dossier Community ?');
         }, 3000).unref?.();
       }
-      sendMf(`MF.SimVars.Set.${c}`);
+      await queueMf(`MF.SimVars.Set.${c}`);
+      await queueMf('MF.DummyCmd');
       log.log?.(`[MSFS] Code avionique envoyé au module MobiFlight : ${c}`);
     },
 
