@@ -198,3 +198,21 @@ test('Rafale : bouton poussoir (1 puis 0) et molette de luminosité bornée', as
   assert.equal(formatDisplay(0.35, dial.action.display), '35 %');
   msfs.close();
 });
+
+test('fin de vol : connexion coupée pendant un abonnement, sans erreur non traitée', async () => {
+  const unhandled = [];
+  const onUnhandled = (e) => unhandled.push(e);
+  process.on('unhandledRejection', onUnhandled);
+  const sim = fakeSimConnect({ inputs: [{ name: 'LANDING_GEAR_GEAR', value: 1 }] });
+  const msfs = createMsfs({ log: quiet, load: async () => sim.lib });
+  msfs.start();
+  await tick();
+  msfs.watch([{ input: 'LANDING_GEAR_GEAR' }]);
+  sim.handle.emit('quit'); // le simulateur coupe la connexion au milieu de l'abonnement
+  await tick(100);
+  assert.equal(msfs.status.connected, false);
+  await assert.rejects(msfs.setInput('LANDING_GEAR_GEAR', 0), /pas connecté/);
+  process.off('unhandledRejection', onUnhandled);
+  msfs.close();
+  assert.deepEqual(unhandled, []);
+});

@@ -1,5 +1,9 @@
 // Serveur autonome (sans l'application PC) : npm start
 import { startDeckServer } from './app.js';
+import { keepAlive } from './logger.js';
+
+// Une erreur imprévue est affichée sans arrêter le serveur.
+keepAlive(console);
 
 const port = Number(process.env.PORT) || 3210;
 

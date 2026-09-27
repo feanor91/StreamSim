@@ -61,8 +61,12 @@ export function createMsfs({
   // --- Variables -------------------------------------------------------------------------
   function subscribe(entry) {
     const { SimConnectDataType, SimConnectPeriod, SimConnectConstants, DataRequestFlag } = lib;
-    handle.addToDataDefinition(entry.id, entry.simvar, entry.unit, SimConnectDataType.FLOAT64);
-    handle.requestDataOnSimObject(entry.id, entry.id, SimConnectConstants.OBJECT_ID_USER, SimConnectPeriod.SIM_FRAME, DataRequestFlag.DATA_REQUEST_FLAG_CHANGED);
+    try {
+      handle.addToDataDefinition(entry.id, entry.simvar, entry.unit, SimConnectDataType.FLOAT64);
+      handle.requestDataOnSimObject(entry.id, entry.id, SimConnectConstants.OBJECT_ID_USER, SimConnectPeriod.SIM_FRAME, DataRequestFlag.DATA_REQUEST_FLAG_CHANGED);
+    } catch (e) {
+      log.warn?.(`[MSFS] Suivi de ${entry.simvar} impossible : ${e.message}`);
+    }
   }
 
   // --- Input Events (MSFS 2024) ------------------------------------------------------------
@@ -72,9 +76,11 @@ export function createMsfs({
     if (inputListing) return inputListing;
     const reqId = newId();
     const items = [];
+    // Connexion utilisée pour cette énumération : elle peut être coupée entre-temps (fin de vol).
+    const h = handle;
     inputListing = new Promise((resolve, reject) => {
       const t = setTimeout(() => {
-        handle?.off('inputEventsList', onList);
+        h.off('inputEventsList', onList);
         inputListing = null;
         // Aucune réponse : simulateur trop ancien ou avion sans Input Events.
         if (items.length) resolve((inputList = items));
@@ -88,14 +94,20 @@ export function createMsfs({
         }
         if (recv.entryNumber >= recv.outOf - 1) {
           clearTimeout(t);
-          handle.off('inputEventsList', onList);
+          h.off('inputEventsList', onList);
           inputListing = null;
           items.sort((a, b) => a.name.localeCompare(b.name));
           resolve((inputList = items));
         }
       }
-      handle.on('inputEventsList', onList);
-      handle.enumerateInputEvents(reqId);
+      try {
+        h.on('inputEventsList', onList);
+        h.enumerateInputEvents(reqId);
+      } catch (e) {
+        clearTimeout(t);
+        inputListing = null;
+        reject(e);
+      }
     });
     return inputListing;
   }
@@ -113,13 +125,16 @@ export function createMsfs({
     try {
       const found = await findInput(name);
       handle?.subscribeInputEvent(found.hash);
-      readInput(found.name).then((v) => {
-        const w = watchedInputs.get(name);
-        if (w && v !== null) {
-          w.value = v;
-          onInput(name, v);
-        }
-      });
+      // Quitter un vol peut couper la connexion entre-temps : la lecture échoue alors sans bruit.
+      readInput(found.name)
+        .then((v) => {
+          const w = watchedInputs.get(name);
+          if (w && v !== null) {
+            w.value = v;
+            onInput(name, v);
+          }
+        })
+        .catch(() => {});
     } catch (e) {
       log.warn?.(`[MSFS] ${e.message}`);
     }
@@ -135,7 +150,14 @@ export function createMsfs({
             resolve(null);
           }, 2000);
           oneShots.set(reqId, { resolve, timer: t });
-          handle.getInputEvent(reqId, found.hash);
+          try {
+            if (!handle) throw new Error('déconnecté');
+            handle.getInputEvent(reqId, found.hash);
+          } catch {
+            clearTimeout(t);
+            oneShots.delete(reqId);
+            resolve(null);
+          }
         }),
     );
   }
@@ -184,7 +206,11 @@ export function createMsfs({
     }
     try {
       // Protocole « KittyHawk » : le plus ancien accepté par MSFS 2020 et 2024.
-      const { recvOpen, handle: h } = await lib.open(APP_NAME, lib.Protocol.KittyHawk);
+      // Délai maximal : pendant un changement de vol, MSFS peut ne jamais répondre.
+      const { recvOpen, handle: h } = await Promise.race([
+        lib.open(APP_NAME, lib.Protocol.KittyHawk),
+        new Promise((_, reject) => setTimeout(() => reject(new Error('délai dépassé')), 15000).unref?.()),
+      ]);
       handle = h;
       h.on('simObjectData', (data) => {
         const once = oneShots.get(data.requestID);
@@ -362,7 +388,9 @@ export function createMsfs({
       for (const [k, entry] of watched) {
         if (wanted.has(k)) continue;
         if (handle) {
-          handle.requestDataOnSimObject(entry.id, entry.id, lib.SimConnectConstants.OBJECT_ID_USER, lib.SimConnectPeriod.NEVER);
+          try {
+            handle.requestDataOnSimObject(entry.id, entry.id, lib.SimConnectConstants.OBJECT_ID_USER, lib.SimConnectPeriod.NEVER);
+          } catch {}
         }
         watched.delete(k);
       }
