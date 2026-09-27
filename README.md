@@ -263,7 +263,7 @@ relevées dans l'avion (fenêtre *Behaviors* de MSFS 2024) : batterie, sécurit�
 armement, laser, altimètre STD, dégivrage, désembuage, prélèvement d'air moteur,
 coupure de la direction de roue avant, crosse de secours, tablette EFB ; boutons de
 page des écrans **VTLG / VTLD** (gauche, droite, haut, bas) ; molettes d'éclairage
-et de luminosité des écrans (± 5 %, valeur affichée). AzurPoly ne documente pas
+et de luminosité des écrans (de 0 à 100 %, ± 5 % par cran). AzurPoly ne documente pas
 l'écriture de ces variables : si une touche n'a pas d'effet dans le cockpit, c'est
 que l'avion ne fait que lire cette variable pour son affichage.
 

@@ -468,9 +468,9 @@ const rafPush = (label, name, title) => ({
   face: { title, icon: null, color: '#161b24' },
 });
 // Molette de luminosité : tourner = ± 5 %, valeur affichée en pourcentage.
-// `max` : valeur de l'avion pour 100 %. Les écrans du Rafale vont de 0 à 1 (constaté en vol :
-// 1 à l'entrée dans le cockpit, écrans saturés au-delà) ; l'éclairage des panneaux, de 0 à 100.
-const rafDial = (label, name, title, { max = 100 } = {}) => {
+// `max` : valeur de l'avion pour 100 %. Constaté en vol sur le Rafale : luminosité des écrans et
+// éclairage des panneaux et voyants vont de 0 à 1 (1 à l'entrée dans le cockpit, saturés au-delà).
+const rafDial = (label, name, title, { max = 1 } = {}) => {
   const step = { type: 'msfs', kind: 'var', var: lvar(name), unit: 'number', op: 'add', min: 0, max };
   return {
     label,
@@ -506,8 +506,8 @@ export const RAFALE_COCKPIT_PRESETS = [
   rafPush('VTLD : page droite', 'AZP_RAF_VTLD_PAGE_SWITCH_R', 'VTLD ▶'),
   rafPush('VTLD : haut', 'AZP_RAF_VTLD_PAGE_SWITCH_UP', 'VTLD ▲'),
   rafPush('VTLD : bas', 'AZP_RAF_VTLD_PAGE_SWITCH_DN', 'VTLD ▼'),
-  rafDial('Éclairage des panneaux', 'AZP_RAF_LIGHTING_PANEL_BACKLIGHT_INTENSITY', 'Panneaux'),
-  rafDial('Éclairage des voyants', 'AZP_RAF_LIGHTING_INTERIOR_INDICATORS_INTENSITY', 'Voyants'),
+  rafDial('Éclairage des panneaux', 'AZP_RAF_LIGHTING_PANEL_BACKLIGHT_INTENSITY', 'Panneaux', { max: 1 }),
+  rafDial('Éclairage des voyants', 'AZP_RAF_LIGHTING_INTERIOR_INDICATORS_INTENSITY', 'Voyants', { max: 1 }),
   rafDial('Luminosité VTLG', 'AZP_RAF_AVIONICS_BRIGHTNESS_VTLG', 'Lum. VTLG', { max: 1 }),
   rafDial('Luminosité VTLD', 'AZP_RAF_AVIONICS_BRIGHTNESS_VTLD', 'Lum. VTLD', { max: 1 }),
 ];
