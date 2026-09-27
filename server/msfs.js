@@ -21,6 +21,9 @@ export function createMsfs({
   onValue = () => {},
   onInput = () => {},
   onAircraft = () => {},
+  retryMs = RETRY_MS, // délais réglables pour les tests
+  inputListTimeoutMs = 6000,
+  inputRetryMs = 5000,
 } = {}) {
   let lib = null;
   let handle = null;
@@ -60,6 +63,8 @@ export function createMsfs({
   const MF_RESP_DEF = 910004;
   const MF_RESP_REQ = 910005;
   let mf = null; // { pong: bool } une fois les canaux déclarés sur la connexion en cours
+  let inputRetry = null; // nouvel essai de lecture des commandes de cockpit (avion en chargement)
+  const INPUT_RETRIES = 6;
 
   const keyOf = (simvar, unit) => `${normalizeVar(simvar)}|${String(unit || 'Bool').trim().toLowerCase()}`;
   const setStatus = (patch) => {
@@ -97,7 +102,7 @@ export function createMsfs({
         // Aucune réponse : simulateur trop ancien ou avion sans Input Events.
         if (items.length) resolve((inputList = items));
         else reject(new Error('Le simulateur n’a renvoyé aucune commande de cockpit (Input Events : MSFS 2024 ou MSFS 2020 à jour requis).'));
-      }, 6000);
+      }, inputListTimeoutMs);
       function onList(recv) {
         if (recv.requestID !== reqId) return;
         for (const d of recv.inputEventDescriptors ?? []) {
@@ -108,6 +113,8 @@ export function createMsfs({
           clearTimeout(t);
           h.off('inputEventsList', onList);
           inputListing = null;
+          // Liste vide : avion encore en chargement, on ne la garde pas (nouvel essai possible).
+          if (!items.length) return reject(new Error('L’avion chargé n’a (encore) aucune commande de cockpit.'));
           items.sort((a, b) => a.name.localeCompare(b.name));
           resolve((inputList = items));
         }
@@ -174,9 +181,31 @@ export function createMsfs({
     );
   }
 
+  /**
+   * (Ré)abonne les Input Events suivis. Juste après le chargement d'un avion, MSFS refuse souvent
+   * de lister ses commandes (exception, liste vide) : on réessaie pendant une trentaine de secondes,
+   * avec un seul message dans le journal en cas d'échec.
+   */
+  function resubscribeInputs(attempt = 0, delay = 0) {
+    clearTimeout(inputRetry);
+    if (!watchedInputs.size) return;
+    inputRetry = setTimeout(async () => {
+      if (!handle) return;
+      try {
+        await listInputs(true);
+      } catch (e) {
+        if (attempt + 1 < INPUT_RETRIES) return resubscribeInputs(attempt + 1, inputRetryMs);
+        log.warn?.(`[MSFS] ${e.message}`);
+        return;
+      }
+      for (const name of watchedInputs.keys()) subscribeInput(name);
+    }, delay);
+    inputRetry.unref?.();
+  }
+
   function resubscribeAll() {
     for (const entry of watched.values()) subscribe(entry);
-    for (const name of watchedInputs.keys()) subscribeInput(name);
+    resubscribeInputs(0, 0);
   }
 
   function sendMf(text) {
@@ -187,8 +216,10 @@ export function createMsfs({
 
   // --- Connexion ---------------------------------------------------------------------------
   function dropConnection(reason) {
+    if (handle) log.log?.(`[MSFS] Déconnecté : ${reason} Nouvelle tentative dans ${Math.round(retryMs / 1000)} s.`);
     handle = null;
     mf = null;
+    clearTimeout(inputRetry);
     eventIds.clear();
     writeDefs.clear();
     inputList = null;
@@ -207,7 +238,7 @@ export function createMsfs({
   function schedule() {
     if (stopped) return;
     clearTimeout(timer);
-    timer = setTimeout(connect, RETRY_MS);
+    timer = setTimeout(connect, retryMs);
     timer.unref?.();
   }
 
@@ -265,7 +296,9 @@ export function createMsfs({
         hashToName.clear();
         setStatus({ aircraft: aircraftName(path) });
         onAircraft(status.aircraft);
-        for (const name of watchedInputs.keys()) subscribeInput(name);
+        log.log?.(`[MSFS] Avion chargé : ${status.aircraft ?? 'inconnu'}.`);
+        // L'avion finit souvent de se charger après l'annonce : on laisse quelques secondes.
+        resubscribeInputs(0, 3000);
       };
       h.on('eventFilename', (e) => e.clientEventId === AIRCRAFT_EVENT && aircraftChanged(e.fileName));
       h.on('systemState', (s) => s.requestID === AIRCRAFT_STATE_REQ && setStatus({ aircraft: aircraftName(s.dataString) }));
@@ -282,12 +315,22 @@ export function createMsfs({
       h.on('exception', (e) => log.warn?.(`[MSFS] Exception SimConnect ${e.exceptionName ?? e.exception} (paquet ${e.sendId})`));
       h.on('quit', () => dropConnection('Simulateur fermé.'));
       h.on('close', () => handle === h && dropConnection('Connexion au simulateur perdue.'));
-      h.on('error', (e) => log.warn?.(`[MSFS] ${e.message}`));
+      h.on('error', (e) => {
+        log.warn?.(`[MSFS] ${e.message}`);
+        // Tuyau coupé (fin de vol, simulateur fermé) : on repart sur une connexion neuve.
+        if (handle === h && /EPIPE|ECONNRESET|EOF|ended|destroyed/i.test(`${e.code ?? ''} ${e.message ?? ''}`)) {
+          dropConnection('Connexion au simulateur interrompue.');
+          try {
+            h.close();
+          } catch {}
+        }
+      });
       try {
         h.subscribeToSystemEvent(AIRCRAFT_EVENT, 'AircraftLoaded');
         h.requestSystemState(AIRCRAFT_STATE_REQ, 'AircraftLoaded');
       } catch {}
       setStatus({ connected: true, simName: recvOpen?.applicationName || 'Microsoft Flight Simulator', reason: null });
+      log.log?.(`[MSFS] Connecté à ${status.simName}.`);
       resubscribeAll();
     } catch {
       // Simulateur non lancé : on réessaie plus tard, sans bruit.
@@ -481,6 +524,7 @@ export function createMsfs({
     close() {
       stopped = true;
       clearTimeout(timer);
+      clearTimeout(inputRetry);
       try {
         handle?.close();
       } catch {}

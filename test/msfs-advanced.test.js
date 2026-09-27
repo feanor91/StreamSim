@@ -235,3 +235,38 @@ test('code avionique par MobiFlight WASM (événements H: du Rafale)', async () 
   await assert.rejects(runAction({}, { type: 'msfs', kind: 'code', code: '  ' }, 0, { msfs }), /Aucun code/);
   msfs.close();
 });
+
+test('chargement d’un avion : commandes de cockpit relues jusqu’à ce que MSFS réponde', async () => {
+  const warnings = [];
+  const log = { log() {}, warn: (m) => warnings.push(m), error() {} };
+  const sim = fakeSimConnect({ inputs: [{ name: 'LANDING_GEAR_GEAR', value: 1 }] });
+  const got = [];
+  const msfs = createMsfs({ log, load: async () => sim.lib, onInput: (n, v) => got.push([n, v]), inputListTimeoutMs: 40, inputRetryMs: 30 });
+  msfs.start();
+  await tick();
+  sim.inputsReady = false; // l'avion se charge : MSFS refuse de lister ses commandes
+  msfs.watch([{ input: 'LANDING_GEAR_GEAR' }]);
+  sim.handle.emit('eventFilename', { clientEventId: 900001, fileName: 'SimObjects\\Airplanes\\Rafale\\config\\aircraft.cfg' });
+  await tick(3150);
+  sim.inputsReady = true; // chargement terminé
+  await tick(200);
+  assert.deepEqual(got.at(-1), ['LANDING_GEAR_GEAR', 1]);
+  assert.equal(warnings.filter((w) => /aucune commande/.test(w)).length <= 1, true);
+  msfs.close();
+});
+
+test('coupure « EPIPE » : reconnexion automatique au simulateur', async () => {
+  const sim = fakeSimConnect({});
+  let opens = 0;
+  const lib = { ...sim.lib, open: async (...a) => (opens++, sim.lib.open(...a)) };
+  const msfs = createMsfs({ log: quiet, load: async () => lib, retryMs: 30 });
+  msfs.start();
+  await tick();
+  assert.equal(msfs.status.connected, true);
+  sim.handle.emit('error', Object.assign(new Error('read EPIPE'), { code: 'EPIPE' }));
+  assert.equal(msfs.status.connected, false);
+  await tick(120);
+  assert.equal(msfs.status.connected, true);
+  assert.equal(opens, 2);
+  msfs.close();
+});
