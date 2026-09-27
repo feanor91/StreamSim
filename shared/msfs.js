@@ -498,7 +498,21 @@ export const RAFALE_COCKPIT_PRESETS = [
   rafVar('Direction roue avant (coupure)', 'AZP_RAF_HYDRAULIC_NOSEWHEEL_STEERING_OFF', 'Dir. roue AV', 'DIR. COUPÉE', null, { onColor: ON_AMBER }),
   rafVar('Crosse (secours)', 'AZP_RAF_HYDRAULIC_TAILHOOK_EMERGENCY_SWITCH', 'Crosse', 'CROSSE', null, { onColor: ON_AMBER }),
   rafVar('Tablette EFB', 'AZP_RAF_EFB_ON', 'EFB', 'EFB', null),
-  rafPush('VTLG : page gauche', 'AZP_RAF_VTLG_PAGE_SWITCH_L', 'VTLG ◀'),
+  // Relevé dans l'Inspector (Ctrl+G) : le bouton FAIL déclenche deux événements H: (module
+  // MobiFlight WASM requis) ; la variable L: ne sert qu'à l'animation du bouton.
+  {
+    label: 'VTLG : FAIL (pannes)',
+    desc: 'Rafale · code avionique (MobiFlight)',
+    action: {
+      type: 'multi',
+      steps: [
+        { type: 'msfs', kind: 'code', code: '(>H:AZP_RAF_VTLG_SWITCH_MOVED_ALARMS) (>H:AZP_RAF_ALARMS_ACKNOWLEDGE) 1 (>L:AZP_RAF_VTLG_PAGE_SWITCH_L, Boolean)' },
+        { type: 'delay', ms: 150 },
+        { type: 'msfs', kind: 'code', code: '0 (>L:AZP_RAF_VTLG_PAGE_SWITCH_L, Boolean)' },
+      ],
+    },
+    face: { title: 'FAIL', icon: null, color: '#161b24' },
+  },
   rafPush('VTLG : page droite', 'AZP_RAF_VTLG_PAGE_SWITCH_R', 'VTLG ▶'),
   rafPush('VTLG : haut', 'AZP_RAF_VTLG_PAGE_SWITCH_UP', 'VTLG ▲'),
   rafPush('VTLG : bas', 'AZP_RAF_VTLG_PAGE_SWITCH_DN', 'VTLG ▼'),

@@ -1188,7 +1188,7 @@ function simhubFields(getAction, tag) {
 function msfsFields(getAction, tag) {
   const a = getAction();
   const kind = a.kind ?? 'event';
-  const kinds = [['event', 'Commande'], ['var', 'Variable'], ['input', 'Input Event']];
+  const kinds = [['event', 'Commande'], ['var', 'Variable'], ['input', 'Input Event'], ['code', 'Code']];
   const head = [
     h('div', { class: 'segmented' },
       ...kinds.map(([id, label]) => h('button', {
@@ -1196,7 +1196,8 @@ function msfsFields(getAction, tag) {
         onclick: () => commit(() => {
           const x = getAction();
           x.kind = id;
-          if (id !== 'event') x.op ??= 'set';
+          if (id !== 'event' && id !== 'code') x.op ??= 'set';
+          if (id === 'code') x.code ??= '';
         }),
       }, label))),
   ];
@@ -1230,6 +1231,23 @@ function msfsFields(getAction, tag) {
       h('label', { class: 'field' }, h('span', {}, 'Valeur (facultatif)'),
         h('input', { type: 'number', value: a.value ?? 0, oninput: (e) => commit(() => (getAction().value = Number(e.target.value) || 0), { tag: `${tag}:value`, render: 'key' }) }),
         h('span', { class: 'hint' }, 'Utile pour les commandes qui attendent un paramètre (ex. HEADING_BUG_SET : cap en degrés).')),
+      msfsNote(),
+    ];
+  }
+
+  // Code avionique (RPN), exécuté par le module MobiFlight WASM : événements H: et B:.
+  if (kind === 'code') {
+    return [
+      ...head,
+      h('label', { class: 'field' }, h('span', {}, 'Code avionique (RPN)'),
+        h('textarea', {
+          class: 'mono',
+          rows: 4,
+          spellcheck: 'false',
+          placeholder: '(>H:AZP_RAF_ALARMS_ACKNOWLEDGE) 1 (>L:AZP_RAF_VTLG_PAGE_SWITCH_L, Boolean)',
+          oninput: (e) => commit(() => (getAction().code = e.target.value), { tag: `${tag}:code`, render: 'key' }),
+        }, a.code ?? ''),
+        h('span', { class: 'hint' }, 'Copiez les lignes « (>H:…) » affichées par la fenêtre Behaviors de MSFS (Ctrl+G sur l’interrupteur, onglet Inspector). Nécessite le module MobiFlight WASM dans le dossier Community (souvent fourni avec l’avion).')),
       msfsNote(),
     ];
   }

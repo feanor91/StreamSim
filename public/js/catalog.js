@@ -95,6 +95,7 @@ export const ACTION_TYPES = {
       const ops = { set: 'fixer à', toggle: 'basculer', add: 'ajouter' };
       if (a.kind === 'var') return a.var ? `${a.var} : ${ops[a.op ?? 'set']} ${a.op === 'toggle' ? '' : a.value ?? 0}`.trim() : 'Aucune variable choisie';
       if (a.kind === 'input') return a.input ? `${a.input} : ${ops[a.op ?? 'set']} ${a.op === 'toggle' ? '' : a.value ?? 0}`.trim() : 'Aucune commande de cockpit choisie';
+      if (a.kind === 'code') return a.code?.trim() ? `Code : ${a.code.trim()}` : 'Aucun code saisi';
       return a.event ? MSFS_EVENT_LABELS[a.event] ?? a.event : 'Aucune commande choisie';
     },
   },

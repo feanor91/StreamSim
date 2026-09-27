@@ -49,6 +49,18 @@ export function createMsfs({
   const AIRCRAFT_EVENT = 900001;
   const AIRCRAFT_STATE_REQ = 900002;
 
+  // Module MobiFlight WASM (dossier Community de MSFS, souvent fourni avec les avions complexes) :
+  // il exécute du « code avionique » (RPN) envoyé par un logiciel externe, ce qui donne accès aux
+  // événements H: et B: que SimConnect ne sait pas déclencher. Canaux « MobiFlight.Command »
+  // (commandes) et « MobiFlight.Response » (réponses), messages de 1024 octets.
+  const MF_SIZE = 1024;
+  const MF_CMD_AREA = 910001;
+  const MF_CMD_DEF = 910002;
+  const MF_RESP_AREA = 910003;
+  const MF_RESP_DEF = 910004;
+  const MF_RESP_REQ = 910005;
+  let mf = null; // { pong: bool } une fois les canaux déclarés sur la connexion en cours
+
   const keyOf = (simvar, unit) => `${normalizeVar(simvar)}|${String(unit || 'Bool').trim().toLowerCase()}`;
   const setStatus = (patch) => {
     status = { ...status, ...patch };
@@ -167,9 +179,16 @@ export function createMsfs({
     for (const name of watchedInputs.keys()) subscribeInput(name);
   }
 
+  function sendMf(text) {
+    const buf = Buffer.alloc(MF_SIZE);
+    buf.write(text, 'utf8');
+    handle.setClientData(MF_CMD_AREA, MF_CMD_DEF, 0, 1, MF_SIZE, buf);
+  }
+
   // --- Connexion ---------------------------------------------------------------------------
   function dropConnection(reason) {
     handle = null;
+    mf = null;
     eventIds.clear();
     writeDefs.clear();
     inputList = null;
@@ -250,6 +269,16 @@ export function createMsfs({
       };
       h.on('eventFilename', (e) => e.clientEventId === AIRCRAFT_EVENT && aircraftChanged(e.fileName));
       h.on('systemState', (s) => s.requestID === AIRCRAFT_STATE_REQ && setStatus({ aircraft: aircraftName(s.dataString) }));
+      h.on('clientData', (recv) => {
+        if (recv.requestID !== MF_RESP_REQ || !mf) return;
+        try {
+          const text = recv.data.readString(MF_SIZE).replace(/\0[\s\S]*$/, '');
+          if (text.startsWith('MF.Pong') && !mf.pong) {
+            mf.pong = true;
+            log.log?.('[MSFS] Module MobiFlight WASM détecté.');
+          }
+        } catch {}
+      });
       h.on('exception', (e) => log.warn?.(`[MSFS] Exception SimConnect ${e.exceptionName ?? e.exception} (paquet ${e.sendId})`));
       h.on('quit', () => dropConnection('Simulateur fermé.'));
       h.on('close', () => handle === h && dropConnection('Connexion au simulateur perdue.'));
@@ -337,6 +366,34 @@ export function createMsfs({
         handle.addToDataDefinition(id, simvar, u, lib.SimConnectDataType.FLOAT64);
         handle.requestDataOnSimObject(id, id, lib.SimConnectConstants.OBJECT_ID_USER, lib.SimConnectPeriod.ONCE);
       });
+    },
+
+    /**
+     * Exécute du code avionique (RPN) par le module MobiFlight WASM, ex.
+     * « (>H:AZP_RAF_ALARMS_ACKNOWLEDGE) 1 (>L:AZP_RAF_VTLG_PAGE_SWITCH_L, Boolean) ».
+     */
+    async execCode(code) {
+      const c = String(code ?? '').replace(/\s+/g, ' ').trim();
+      if (!c) throw new Error('Aucun code avionique saisi.');
+      if (Buffer.byteLength(`MF.SimVars.Set.${c}`) >= MF_SIZE) throw new Error('Code avionique trop long.');
+      requireHandle();
+      if (!mf) {
+        mf = { pong: false };
+        handle.mapClientDataNameToID('MobiFlight.Command', MF_CMD_AREA);
+        handle.addToClientDataDefinition(MF_CMD_DEF, 0, MF_SIZE, 0, 0);
+        try {
+          // Réponse au « ping » : seulement pour signaler dans le journal si le module est présent.
+          handle.mapClientDataNameToID('MobiFlight.Response', MF_RESP_AREA);
+          handle.addToClientDataDefinition(MF_RESP_DEF, 0, MF_SIZE, 0, 0);
+          handle.requestClientData(MF_RESP_AREA, MF_RESP_REQ, MF_RESP_DEF, lib.ClientDataPeriod?.ON_SET ?? 3, lib.ClientDataRequestFlag?.CLIENT_DATA_REQUEST_FLAG_CHANGED ?? 1);
+        } catch {}
+        sendMf('MF.Ping');
+        const probe = mf;
+        setTimeout(() => {
+          if (mf === probe && !probe.pong) log.warn?.('[MSFS] Le module MobiFlight WASM ne répond pas : est-il installé dans le dossier Community ?');
+        }, 3000).unref?.();
+      }
+      sendMf(`MF.SimVars.Set.${c}`);
     },
 
     /** Commandes de cockpit (Input Events) de l'avion chargé. */

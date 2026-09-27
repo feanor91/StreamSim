@@ -267,6 +267,15 @@ et de luminosité des écrans (de 0 à 100 %, ± 5 % par cran). AzurPoly ne docu
 l'écriture de ces variables : si une touche n'a pas d'effet dans le cockpit, c'est
 que l'avion ne fait que lire cette variable pour son affichage.
 
+**Code avionique (événements `H:` et `B:`).** Beaucoup d'interrupteurs du Rafale
+ne changent qu'une variable `L:` pour leur animation : la vraie fonction passe par
+des événements `H:` que SimConnect ne sait pas déclencher. Commande MSFS → mode
+**Code** : saisissez le code affiché par l'Inspector (Ctrl+G sur l'interrupteur),
+par exemple `(>H:AZP_RAF_ALARMS_ACKNOWLEDGE) 1 (>L:AZP_RAF_VTLG_PAGE_SWITCH_L, Boolean)`.
+Il est exécuté par le module gratuit **MobiFlight WASM** (dossier *Community* de
+MSFS, souvent fourni avec les avions complexes) ; le journal indique s'il est
+détecté. Exemple fourni : *VTLG : FAIL (pannes)*.
+
 Le Rafale n'expose pas ses systèmes de cockpit (armement, écrans, pilote
 automatique…) sous forme d'Input Events : ils passent par ses variables `L:`.
 Pour les trouver, activez le mode développeur de MSFS 2024, puis *Tools →

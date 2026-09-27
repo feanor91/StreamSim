@@ -156,7 +156,9 @@ test('Rafale : préréglages et nom de l’avion (MSFS 2024)', async () => {
   for (const p of RAFALE_COCKPIT_PRESETS) {
     const a = p.action;
     const vars = [a.sync?.simvar, a.display?.simvar, ...(a.steps ?? []).map((s) => s.var), ...(a.actions ?? []).map((s) => s.var), a.inc?.var, a.dec?.var].filter(Boolean);
-    assert.ok(vars.length, p.label);
+    const codes = (a.steps ?? []).filter((s) => s.kind === 'code').map((s) => s.code);
+    assert.ok(vars.length || codes.length, p.label);
+    for (const c of codes) assert.match(c, /AZP_RAF_/, p.label);
     for (const v of vars) assert.ok(isValidSimvar(v) && v.startsWith('L:AZP_RAF_'), `${p.label} : ${v}`);
   }
   assert.equal(aircraftFromPath('C:\\MSFS\\Community\\azurpoly\\SimObjects\\Airplanes\\Rafale\\presets\\azurpoly\\rafale-c\\config\\aircraft.cfg'), 'rafale-c');
@@ -215,4 +217,21 @@ test('fin de vol : connexion coupée pendant un abonnement, sans erreur non trai
   process.off('unhandledRejection', onUnhandled);
   msfs.close();
   assert.deepEqual(unhandled, []);
+});
+
+test('code avionique par MobiFlight WASM (événements H: du Rafale)', async () => {
+  const logs = [];
+  const log = { log: (m) => logs.push(m), warn: (m) => logs.push(m), error() {} };
+  const sim = fakeSimConnect({ vars: { 'L:AZP_RAF_VTLG_PAGE_SWITCH_L': 0 } });
+  const msfs = createMsfs({ log, load: async () => sim.lib });
+  msfs.start();
+  await tick();
+  const code = '(>H:AZP_RAF_VTLG_SWITCH_MOVED_ALARMS) (>H:AZP_RAF_ALARMS_ACKNOWLEDGE) 1 (>L:AZP_RAF_VTLG_PAGE_SWITCH_L, Boolean)';
+  await runAction({}, { type: 'msfs', kind: 'code', code }, 0, { msfs });
+  await tick(30);
+  assert.deepEqual(sim.mfCommands, ['MF.Ping', `MF.SimVars.Set.${code}`]);
+  assert.equal(sim.values['L:AZP_RAF_VTLG_PAGE_SWITCH_L'], 1);
+  assert.ok(logs.some((m) => /MobiFlight WASM détecté/.test(m)));
+  await assert.rejects(runAction({}, { type: 'msfs', kind: 'code', code: '  ' }, 0, { msfs }), /Aucun code/);
+  msfs.close();
 });
