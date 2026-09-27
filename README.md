@@ -274,7 +274,11 @@ des événements `H:` que SimConnect ne sait pas déclencher. Commande MSFS → 
 par exemple `(>H:AZP_RAF_ALARMS_ACKNOWLEDGE) 1 (>L:AZP_RAF_VTLG_PAGE_SWITCH_L, Boolean)`.
 Il est exécuté par le module gratuit **MobiFlight WASM** (dossier *Community* de
 MSFS, souvent fourni avec les avions complexes) ; le journal indique s'il est
-détecté. Exemple fourni : *VTLG : FAIL (pannes)*.
+détecté. Touches fournies (groupe *Rafale : cockpit*) : boutons de page du VTLG
+**FAIL**, **AP** et **WPN**, et la **molette de visualisation** gauche (tourner =
+régler altitudes, vitesses…, appui = valider). Les touches marquées « animation
+seule » ne font que bouger l'interrupteur : envoyez une capture de l'Inspector pour
+les compléter.
 
 Le Rafale n'expose pas ses systèmes de cockpit (armement, écrans, pilote
 automatique…) sous forme d'Input Events : ils passent par ses variables `L:`.

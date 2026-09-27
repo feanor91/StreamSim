@@ -13,8 +13,8 @@ android {
         applicationId = "com.streamdeck.client"
         minSdk = 24 // Android 7.0
         targetSdk = 35
-        versionCode = 19
-        versionName = "0.9.5"
+        versionCode = 20
+        versionName = "0.9.6"
     }
 
     // Clé de signature fournie par l'environnement (secrets GitHub dans la CI) :
