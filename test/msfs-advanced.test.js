@@ -156,11 +156,22 @@ test('Rafale : préréglages et nom de l’avion (MSFS 2024)', async () => {
   for (const p of RAFALE_COCKPIT_PRESETS) {
     const a = p.action;
     const vars = [a.sync?.simvar, a.display?.simvar, ...(a.steps ?? []).map((s) => s.var), ...(a.actions ?? []).map((s) => s.var), a.inc?.var, a.dec?.var].filter(Boolean);
-    const codes = [...(a.steps ?? []), a.inc, a.dec, a.press].filter((s) => s?.kind === 'code').map((s) => s.code);
+    const codes = [a, ...(a.steps ?? []), ...(a.actions ?? []), a.inc, a.dec, a.press].filter((s) => s?.kind === 'code').map((s) => s.code);
     assert.ok(vars.length || codes.length, p.label);
     for (const c of codes) assert.match(c, /AZP_RAF_/, p.label);
     for (const v of vars) assert.ok(isValidSimvar(v) && v.startsWith('L:AZP_RAF_'), `${p.label} : ${v}`);
   }
+  // Commandes documentées par AzurPoly (« Custom variables and events ») toutes présentes.
+  const allCodes = JSON.stringify(RAFALE_COCKPIT_PRESETS);
+  for (const ev of ['AIR_CONDITIONING_TOGGLE_PRESSED', 'ALARMS_ACKNOWLEDGE', 'AP_ALT_VAR_INC', 'AP_ALT_VAR_DEC', 'AP_AT_TOGGLE',
+    'AP_MAIN_MODE_TOGGLE', 'AP_TF_TOGGLE', 'AVIONICS_MF_KNOB_INC', 'AVIONICS_MF_KNOB_DEC', 'AVIONICS_MF_KNOB_PUSHED',
+    'AVIONICS_VISUALISATION_KNOB_RIGHT_PUSHED', 'ELECTRICAL_MAIN_SOURCE_KNOB_INC', 'ENGINE_TGA_TOGGLE_PRESSED',
+    'VTLD_SWITCH_MOVED_HSI', 'VTLD_SWITCH_MOVED_FUEL', 'VTLD_SWITCH_MOVED_ECM', 'VTLD_SWITCH_MOVED_SITAC', 'VTLG_SWITCH_MOVED_INFO',
+    'WEAPONS_EMERGENCY_JETTISON_PRESSED', 'WEAPONS_GUN_REFILL']) assert.ok(allCodes.includes(`(>H:AZP_RAF_${ev})`), ev);
+  const aec = RAFALE_COCKPIT_PRESETS.find((p) => p.label.includes('auxiliaire gauche')).action;
+  assert.equal(aec.inc.code, '(L:AZP_RAF_ENGINE_AUXILIARY_LEVER_POS:1, Number) 1 + 3 min (>L:AZP_RAF_ENGINE_AUXILIARY_LEVER_POS:1, Number)');
+  assert.equal(aec.dec.code, '(L:AZP_RAF_ENGINE_AUXILIARY_LEVER_POS:1, Number) 1 - 0 max (>L:AZP_RAF_ENGINE_AUXILIARY_LEVER_POS:1, Number)');
+  assert.deepEqual(aec.display.labels, ['STOP', 'IDLE', 'NORM', 'FIX']);
   assert.equal(aircraftFromPath('C:\\MSFS\\Community\\azurpoly\\SimObjects\\Airplanes\\Rafale\\presets\\azurpoly\\rafale-c\\config\\aircraft.cfg'), 'rafale-c');
   assert.equal(aircraftFromPath('SimObjects\\Airplanes\\Faux_Rafale\\aircraft.cfg'), 'Faux_Rafale');
 });

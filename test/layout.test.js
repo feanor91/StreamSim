@@ -106,6 +106,8 @@ test('contrôles continus : conversions et affichage', async () => {
   assert.equal(formatDisplay(0, { suffix: '°', wrap360: true }), '360°');
   assert.equal(formatDisplay(1013.25, { suffix: ' hPa' }), '1013 hPa');
   assert.equal(formatDisplay(null), '—');
+  assert.equal(formatDisplay(2, { labels: ['STOP', 'IDLE', 'NORM', 'FIX'] }), 'NORM');
+  assert.equal(formatDisplay(7, { labels: ['STOP', 'IDLE'] }), '7');
   assert.equal(levelToValue(0), 0);
   assert.equal(levelToValue(1), 16383);
   assert.equal(levelToValue(0.5, -16383, 16383), 0);
