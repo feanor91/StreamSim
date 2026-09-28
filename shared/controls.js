@@ -23,6 +23,11 @@ export function formatDisplay(value, display = {}, flags = null) {
   if (typeof value === 'string' && value !== '' && Number.isNaN(Number(value))) return `${value}${display.suffix ?? ''}`;
   if (value === null || value === undefined || value === '' || Number.isNaN(Number(value))) return '—';
   if (display.time) return formatDuration(Number(value), display.decimals ?? 3);
+  // Sélecteur à positions nommées (ex. 0 → « STOP », 1 → « IDLE ») : libellé de la position.
+  if (Array.isArray(display.labels)) {
+    const label = display.labels[Math.round(Number(value))];
+    if (label !== undefined) return label;
+  }
   let v = Number(value) * (Number(display.scale) || 1);
   let decimals = clamp(Number(display.decimals) || 0, 0, 3);
   if (display.machAuto && Math.abs(v) > 0 && Math.abs(v) < 1) decimals = 2;

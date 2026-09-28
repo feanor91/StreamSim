@@ -494,7 +494,7 @@ const rafPage = (label, events, animVar, title) => ({
   face: { title, icon: null, color: '#161b24' },
 });
 // Molette sans butée : _INC / _DEC en tournant, _PUSHED à l'appui (validation).
-const rafKnob = (label, base, title) => ({
+const rafKnob = (label, base, title, { push = true } = {}) => ({
   label,
   desc: 'Rafale · bouton rotatif (MobiFlight)',
   action: {
@@ -502,11 +502,45 @@ const rafKnob = (label, base, title) => ({
     sensitivity: 'normal',
     inc: code(`(>H:${base}_INC)`),
     dec: code(`(>H:${base}_DEC)`),
-    press: code(`(>H:${base}_PUSHED)`),
+    press: push ? code(`(>H:${base}_PUSHED)`) : null,
     display: null,
   },
   face: { title, icon: null, color: '#161b24' },
 });
+// Simple appui : un événement H: (documentation AzurPoly, « Custom variables and events »).
+const rafEvent = (label, event, title, { color = '#161b24' } = {}) => ({
+  label,
+  desc: 'Rafale · code avionique (MobiFlight)',
+  action: code(`(>H:${event})`),
+  face: { title, icon: null, color },
+});
+// Bascule par événement H:, état lu dans une variable L: de l'avion.
+const rafEventToggle = (label, event, stateVar, title, onTitle, { onColor = ON_GREEN } = {}) => ({
+  label,
+  desc: 'Rafale · code avionique (MobiFlight)',
+  action: { type: 'toggle', same: true, sync: { simvar: lvar(stateVar), unit: 'number' }, actions: [code(`(>H:${event})`)] },
+  face: { title, icon: null, color: RAF },
+  alt: { title: onTitle, icon: null, color: onColor },
+});
+// Sélecteur à positions (0, 1, 2…) : tourner = position suivante / précédente, sans dépasser
+// les butées ; la touche affiche le nom de la position.
+const rafSelector = (label, stateVar, labels, title) => {
+  const v = `(L:${stateVar}, Number)`;
+  const max = labels.length - 1;
+  return {
+    label,
+    desc: 'Rafale · sélecteur (MobiFlight)',
+    action: {
+      type: 'dial',
+      sensitivity: 'fine',
+      inc: code(`${v} 1 + ${max} min (>L:${stateVar}, Number)`),
+      dec: code(`${v} 1 - 0 max (>L:${stateVar}, Number)`),
+      press: null,
+      display: { simvar: lvar(stateVar), unit: 'number', labels },
+    },
+    face: { title, icon: null, color: '#161b24' },
+  };
+};
 
 export const RAFALE_COCKPIT_PRESETS = [
   rafVar('Batterie', 'AZP_RAF_ELECTRICAL_BATTERY_MASTER_SWITCH_STATE', 'Batterie', 'BATTERIE', 'battery'),
@@ -519,15 +553,40 @@ export const RAFALE_COCKPIT_PRESETS = [
   rafVar('Direction roue avant (coupure)', 'AZP_RAF_HYDRAULIC_NOSEWHEEL_STEERING_OFF', 'Dir. roue AV', 'DIR. COUPÉE', null, { onColor: ON_AMBER }),
   rafVar('Crosse (secours)', 'AZP_RAF_HYDRAULIC_TAILHOOK_EMERGENCY_SWITCH', 'Crosse', 'CROSSE', null, { onColor: ON_AMBER }),
   rafVar('Tablette EFB', 'AZP_RAF_EFB_ON', 'EFB', 'EFB', null),
-  // Boutons de page du VTLG, relevés dans l'Inspector (Ctrl+G) : chacun déclenche un ou deux
-  // événements H: (module MobiFlight WASM requis) ; la variable L: n'anime que le bouton.
+  // Commandes relevées dans l'Inspector (Ctrl+G) et dans la documentation AzurPoly
+  // (« Custom variables and events ») : événements H: exécutés par le module MobiFlight WASM ;
+  // pour les boutons de page, la variable L: n'anime que le bouton.
+  // Écran gauche (VTLG) : pages.
   rafPage('VTLG : FAIL (pannes)', ['AZP_RAF_VTLG_SWITCH_MOVED_ALARMS', 'AZP_RAF_ALARMS_ACKNOWLEDGE'], 'AZP_RAF_VTLG_PAGE_SWITCH_L', 'FAIL'),
   rafPage('VTLG : AP (pilote automatique)', ['AZP_RAF_VTLG_SWITCH_MOVED_AUTOPILOT'], 'AZP_RAF_VTLG_PAGE_SWITCH_R', 'AP'),
   rafPage('VTLG : WPN (armement)', ['AZP_RAF_VTLG_SWITCH_MOVED_WEAPONS'], 'AZP_RAF_VTLG_PAGE_SWITCH_UP', 'WPN'),
-  // Molette de visualisation (gauche) : tourner = régler (altitudes, vitesses…), appui = valider.
+  rafPage('VTLG : INFO', ['AZP_RAF_VTLG_SWITCH_MOVED_INFO'], 'AZP_RAF_VTLG_PAGE_SWITCH_DN', 'INFO'),
+  // Écran droit (VTLD, tactile) : pages.
+  rafEvent('VTLD : HSI', 'AZP_RAF_VTLD_SWITCH_MOVED_HSI', 'HSI'),
+  rafEvent('VTLD : FUEL (carburant)', 'AZP_RAF_VTLD_SWITCH_MOVED_FUEL', 'FUEL'),
+  rafEvent('VTLD : ECM (contre-mesures)', 'AZP_RAF_VTLD_SWITCH_MOVED_ECM', 'ECM'),
+  rafEvent('VTLD : SITAC (situation tactique)', 'AZP_RAF_VTLD_SWITCH_MOVED_SITAC', 'SITAC'),
+  // Molettes de visualisation : tourner = régler (altitudes, vitesses…), appui = valider.
   rafKnob('Molette de visualisation gauche', 'AZP_RAF_AVIONICS_VISUALISATION_KNOB_LEFT', 'VISU G'),
-  // Le VTLD (droite) est un écran tactile, sans molette : aucune commande externe connue.
-  // Le bouton bas du VTLG n'est pas encore implémenté dans l'avion.
+  rafKnob('Molette de visualisation droite', 'AZP_RAF_AVIONICS_VISUALISATION_KNOB_RIGHT', 'VISU D'),
+  // Molette multifonction (MFK) : rotation et appui, et sélecteur de position.
+  rafKnob('Molette multifonction (MFK)', 'AZP_RAF_AVIONICS_MF_KNOB', 'MFK'),
+  rafSelector('Sélecteur MFK (R1, R2, H, BULL…)', 'AZP_RAF_AVIONICS_MF_KNOB_MODE', ['R1', 'R2', 'H', 'BULL', 'BINGO', 'DEST', 'ALT'], 'MFK'),
+  // Pilote automatique.
+  rafEvent('Pilote automatique (marche / arrêt)', 'AZP_RAF_AP_MAIN_MODE_TOGGLE', 'AP'),
+  rafEventToggle('Automanette (A/T)', 'AZP_RAF_AP_AT_TOGGLE', 'AZP_RAF_AT_MODE', 'A/T', 'A/T', { onColor: '#0369a1' }),
+  rafEventToggle('Suivi de terrain (TF)', 'AZP_RAF_AP_TF_TOGGLE', 'AZP_RAF_FBW_TERRAIN_FOLLOW_ACTIVE', 'TF', 'TF', { onColor: '#0369a1' }),
+  rafKnob('Altitude cible du pilote automatique', 'AZP_RAF_AP_ALT_VAR', 'AP ALT', { push: false }),
+  // Moteurs, électricité, conditionnement d'air.
+  rafSelector('Commande moteur auxiliaire gauche (AEC)', 'AZP_RAF_ENGINE_AUXILIARY_LEVER_POS:1', ['STOP', 'IDLE', 'NORM', 'FIX'], 'AEC G'),
+  rafSelector('Commande moteur auxiliaire droite (AEC)', 'AZP_RAF_ENGINE_AUXILIARY_LEVER_POS:2', ['STOP', 'IDLE', 'NORM', 'FIX'], 'AEC D'),
+  rafEvent('Groupe auxiliaire (APU / TGA)', 'AZP_RAF_ENGINE_TGA_TOGGLE_PRESSED', 'APU'),
+  rafEvent('Conditionnement d’air (ECS, démarre l’APU si besoin)', 'AZP_RAF_AIR_CONDITIONING_TOGGLE_PRESSED', 'ECS'),
+  rafKnob('Sélecteur de source électrique (5K)', 'AZP_RAF_ELECTRICAL_MAIN_SOURCE_KNOB', '5K', { push: false }),
+  // Alarmes et armement.
+  rafEvent('Acquitter les alarmes', 'AZP_RAF_ALARMS_ACKNOWLEDGE', 'ACQ ALARM', { color: '#78350f' }),
+  rafEvent('Largage d’urgence des charges', 'AZP_RAF_WEAPONS_EMERGENCY_JETTISON_PRESSED', 'LARGAGE', { color: '#7f1d1d' }),
+  rafEvent('Recharger le canon', 'AZP_RAF_WEAPONS_GUN_REFILL', 'CANON', { color: '#3f3f46' }),
   rafDial('Éclairage des panneaux', 'AZP_RAF_LIGHTING_PANEL_BACKLIGHT_INTENSITY', 'Panneaux', { max: 1 }),
   rafDial('Éclairage des voyants', 'AZP_RAF_LIGHTING_INTERIOR_INDICATORS_INTENSITY', 'Voyants', { max: 1 }),
   rafDial('Luminosité VTLG', 'AZP_RAF_AVIONICS_BRIGHTNESS_VTLG', 'Lum. VTLG', { max: 1 }),

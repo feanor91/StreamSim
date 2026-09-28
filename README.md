@@ -273,11 +273,20 @@ des événements `H:` que SimConnect ne sait pas déclencher. Commande MSFS → 
 par exemple `(>H:AZP_RAF_ALARMS_ACKNOWLEDGE) 1 (>L:AZP_RAF_VTLG_PAGE_SWITCH_L, Boolean)`.
 Il est exécuté par le module gratuit **MobiFlight WASM** (dossier *Community* de
 MSFS, souvent fourni avec les avions complexes) ; le journal indique s'il est
-détecté. Touches fournies (groupe *Rafale : cockpit*) : boutons de page du VTLG
-**FAIL**, **AP** et **WPN**, et la **molette de visualisation** gauche (tourner =
-régler altitudes, vitesses…, appui = valider). Le bouton bas du VTLG n'est pas
-encore implémenté dans l'avion. Le VTLD (écran de droite) est tactile : il ne présente aucune
-commande externe, et ne peut donc pas être piloté depuis le Deck.
+détecté. Touches fournies (groupe *Rafale : cockpit*), reprenant toutes les
+commandes de la documentation AzurPoly (*Custom variables and events*) :
+
+- pages du VTLG **FAIL**, **AP**, **WPN** et **INFO**, et du VTLD (écran tactile de
+  droite) **HSI**, **FUEL**, **ECM** et **SITAC** ;
+- **molettes de visualisation** gauche et droite, et **molette multifonction
+  (MFK)** : tourner = régler (altitudes, vitesses…), appui = valider ; sélecteur
+  de mode de la MFK (R1, R2, H, BULL, BINGO, DEST, ALT, affiché sur la touche) ;
+- pilote automatique : marche/arrêt, **A/T**, **TF** (état affiché), molette
+  d'altitude cible ;
+- commandes moteur auxiliaires **AEC** gauche et droite (STOP, IDLE, NORM, FIX),
+  **APU**, **ECS** (climatisation, démarre l'APU si besoin), sélecteur de source
+  électrique **5K** ;
+- acquittement des alarmes, **largage d'urgence**, rechargement du canon.
 
 Le Rafale n'expose pas ses systèmes de cockpit (armement, écrans, pilote
 automatique…) sous forme d'Input Events : ils passent par ses variables `L:`.
