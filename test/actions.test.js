@@ -98,10 +98,12 @@ test('raccourci en mode jeu : appui maintenu, sans changer l’envoi habituel', 
   const ex = recorder();
   await runAction(ex, { type: 'hotkey', hotkey: { key: 'F', modifiers: [] }, game: true });
   await runAction(ex, { type: 'hotkey', hotkey: { key: 'F', modifiers: [] }, game: true, hold: 5000 });
+  await runAction(ex, { type: 'hotkey', hotkey: { key: 'F', modifiers: [] }, game: true, hold: 120 });
   await runAction(ex, { type: 'hotkey', hotkey: { key: 'F', modifiers: [] } });
   assert.deepEqual(ex.calls, [
     ['hotkey', { key: 'F', modifiers: [] }, { game: true, hold: 60 }],
     ['hotkey', { key: 'F', modifiers: [] }, { game: true, hold: 500 }],
+    ['hotkey', { key: 'F', modifiers: [] }, { game: true, hold: 120 }],
     ['hotkey', { key: 'F', modifiers: [] }],
   ]);
 });

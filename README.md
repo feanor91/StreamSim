@@ -179,6 +179,11 @@ Certains jeux ignorent les touches envoyées par un logiciel : ils lisent le cla
 code matériel, image par image, et ne voient ni une touche sans code matériel ni une
 touche relâchée aussitôt. Sur une touche « Raccourci clavier », cochez **Mode jeu** : la
 touche est alors envoyée comme le ferait un vrai clavier (code matériel) et maintenue 60 ms.
+La durée d'appui est réglable (champ « Durée d'appui », 60 ms par défaut, de 10 à 500) : augmentez-la
+si le jeu manque des appuis. Pour ne pas cocher la case touche par touche, le menu du profil propose
+**Mode jeu automatique sur les nouvelles touches** : une fois activé, tout raccourci clavier ajouté
+ensuite a le mode jeu déjà coché (les touches existantes ne changent pas). Il n'est pas activé par
+défaut, car les autres usages (MSFS, bureautique) n'en ont pas besoin.
 Si ça ne suffit pas :
 
 - lancez StreamSim **en administrateur** quand le jeu l'est (Windows n'autorise pas une

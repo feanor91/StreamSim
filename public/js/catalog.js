@@ -7,6 +7,22 @@ import { SIMHUB_PRESETS } from '/shared/simhub.js';
 
 export const isMac = /Mac|iPhone|iPad/.test(navigator.platform);
 
+// Réglage global « Mode jeu automatique » : les raccourcis clavier créés ensuite l'ont déjà coché.
+let gameDefault = false;
+export const setGameDefault = (on) => {
+  gameDefault = !!on;
+};
+/** Coche le mode jeu sur tous les raccourcis clavier d'une action (y compris dans ses sous-actions). */
+export function applyGameDefault(action) {
+  if (!gameDefault || !action || typeof action !== 'object') return action;
+  if (action.type === 'hotkey') action.game = true;
+  for (const v of Object.values(action)) {
+    if (Array.isArray(v)) v.forEach(applyGameDefault);
+    else if (v && typeof v === 'object' && v.type) applyGameDefault(v);
+  }
+  return action;
+}
+
 // Types d'action disponibles : métadonnées d'affichage + valeurs par défaut.
 export const ACTION_TYPES = {
   hotkey: {
@@ -15,7 +31,7 @@ export const ACTION_TYPES = {
     desc: 'Envoie une combinaison de touches',
     icon: '⌨️',
     color: '#8b7bff',
-    create: () => ({ type: 'hotkey', hotkey: { modifiers: [], key: '' }, target: { by: 'none', value: '' } }),
+    create: () => ({ type: 'hotkey', hotkey: { modifiers: [], key: '' }, target: { by: 'none', value: '' }, ...(gameDefault ? { game: true } : {}) }),
     face: { icon: '⌨️', color: '#4f46e5' },
     summary: (a) => formatHotkey(a.hotkey, { mac: isMac }) || 'Aucune touche définie',
   },
@@ -335,13 +351,13 @@ export function libraryItemInfo(item) {
 export function createFromLibrary(item) {
   if (item.action) {
     const copy = JSON.parse(JSON.stringify(item));
-    return { action: copy.action, face: copy.alt ? { ...copy.face, alt: copy.alt } : copy.face };
+    return { action: applyGameDefault(copy.action), face: copy.alt ? { ...copy.face, alt: copy.alt } : copy.face };
   }
   const t = ACTION_TYPES[item.type];
   const face = { title: item.title ?? t.face.title ?? t.label, icon: item.icon ?? t.face.icon, color: item.color ?? t.face.color };
   const alt = item.alt ?? t.alt;
   return {
-    action: { ...t.create(), ...(item.preset ?? {}) },
+    action: applyGameDefault({ ...t.create(), ...(item.preset ?? {}) }),
     face: alt ? { ...face, alt: { ...alt } } : face,
   };
 }
