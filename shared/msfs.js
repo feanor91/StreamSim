@@ -597,7 +597,7 @@ export const RAFALE_COCKPIT_PRESETS = [
   rafKnob('Sélecteur de source électrique (5K)', 'AZP_RAF_ELECTRICAL_MAIN_SOURCE_KNOB', '5K', {
     push: false,
     images: ['off', 'test', 'stby', 'norm', 'l', 'r'].map((p) => `${RAF_FACES}/rafale-5k-${p}.svg`),
-    start: 3,
+    start: 0,
     span: { w: 2, h: 2 },
     sensitivity: 'fine',
   }),
