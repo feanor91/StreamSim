@@ -745,19 +745,23 @@ select optgroup {
   bottom: 10%;
 }
 
-/* Visuel complet de touche (fournis avec l'application) : image entière, sans fond ni titre propres. */
+/* Visuel complet de touche (fournis avec l'application) : image entière, sans fond ni titre propres.
+   Posée en absolu : dans la grille de la touche, une hauteur en % ne se résolvait pas et l'image gardait sa
+   taille d'origine (144 px), coupée dès que la touche était plus basse (téléphone en paysage). */
 .keyface.kf-full-key {
+  position: relative;
+  display: block;
   background: none;
   box-shadow: none;
   padding: 0;
 }
-.keyface img.kf-icon.kf-full {
+.keyface img.kf-icon.kf-full,
+.dkey .keyface img.kf-icon.kf-full {
+  position: absolute;
+  inset: 0;
   width: 100%;
   height: 100%;
   object-fit: contain;
   transform: none;
   filter: none;
-}
-.dkey .keyface img.kf-icon.kf-full {
-  object-fit: contain;
 }
