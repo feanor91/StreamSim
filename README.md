@@ -173,6 +173,22 @@ Raccourcis clavier : flèches pour se déplacer, `Suppr` pour effacer,
 | Curseur | Glisser pour régler une position (gaz, volets…) ou envoyer des crans « + » / « − » |
 | Bascule (2 états) | Alterne entre deux états (ex. train rentré / sorti) : titre, icône, couleur et action propres à chaque état |
 
+#### Jeux et simulateurs (Assetto Corsa, Le Mans Ultimate…)
+
+Certains jeux ignorent les touches envoyées par un logiciel : ils lisent le clavier par son
+code matériel, image par image, et ne voient ni une touche sans code matériel ni une
+touche relâchée aussitôt. Sur une touche « Raccourci clavier », cochez **Mode jeu** : la
+touche est alors envoyée comme le ferait un vrai clavier (code matériel) et maintenue 60 ms.
+Si ça ne suffit pas :
+
+- lancez StreamSim **en administrateur** quand le jeu l'est (Windows n'autorise pas une
+  application ordinaire à envoyer des touches à une application élevée) ;
+- vérifiez que le jeu est bien la fenêtre active au moment de l'appui (jeu en plein écran
+  exclusif : préférez le mode fenêtré sans bordure) ;
+- si le jeu (ou son anti-triche, comme EasyAntiCheat) bloque toute entrée logicielle, StreamSim
+  n'a pas de moyen de la contourner, et ne cherche pas à le faire : dans ce cas, utilisez
+  la fonction de macros ou de boutons du jeu lui-même, ou un périphérique matériel.
+
 ### Touches à bascule
 
 Une bascule a deux états, chacun avec son titre, son icône, sa couleur et

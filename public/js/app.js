@@ -865,6 +865,9 @@ function hotkeyEditor(getAction, tag) {
     h('span', { class: 'field-label', style: { marginTop: '6px' } }, 'Ou composez-le manuellement'),
     chips,
     keySelect,
+    h('label', { class: 'switch', style: { marginTop: '8px' }, title: 'Pour les jeux et simulateurs qui ignorent les touches envoyées par le logiciel : la touche est envoyée par son code matériel et maintenue 60 ms.' },
+      h('input', { type: 'checkbox', checked: !!getAction().game, onchange: (e) => commit(() => (getAction().game = e.target.checked), { render: 'key' }) }),
+      'Mode jeu (touche envoyée comme un vrai clavier)'),
     h('label', { class: 'field', style: { marginTop: '6px' } }, h('span', {}, 'Répéter'),
       h('input', {
         type: 'number', min: 1, max: 50, value: getAction().repeat ?? 1,

@@ -120,7 +120,8 @@ export function createWindowsExecutor() {
       }
     },
     focus: (target) => agent.call('focus', { by: target.by, value: target.value }),
-    hotkey: (hotkey) => agent.call('chord', { seq: hotkeyToSequence(hotkey) }),
+    hotkey: (hotkey, opts = {}) =>
+      agent.call('chord', { seq: hotkeyToSequence(hotkey), game: !!opts.game, hold: opts.game ? opts.hold ?? 60 : 0 }),
     text: (text) => agent.call('text', { text }, 60000),
     media: (id) => {
       const vk = MEDIA_VK[id];

@@ -33,9 +33,11 @@ public static class DeckInput {
     const uint KEYEVENTF_EXTENDEDKEY = 0x0001;
     const uint KEYEVENTF_KEYUP = 0x0002;
     const uint KEYEVENTF_UNICODE = 0x0004;
+    const uint KEYEVENTF_SCANCODE = 0x0008;
 
     [DllImport("user32.dll", SetLastError = true)]
     static extern uint SendInput(uint nInputs, INPUT[] pInputs, int cbSize);
+    [DllImport("user32.dll")] static extern uint MapVirtualKey(uint uCode, uint uMapType);
     [DllImport("user32.dll")] static extern bool SetForegroundWindow(IntPtr hWnd);
     [DllImport("user32.dll")] static extern bool ShowWindow(IntPtr hWnd, int nCmdShow);
     [DllImport("user32.dll")] static extern bool IsIconic(IntPtr hWnd);
@@ -58,14 +60,38 @@ public static class DeckInput {
     }
 
     // keys : liste [vk, extended] ; tout est enfoncé dans l'ordre puis relâché en sens inverse.
-    public static void Chord(int[] vks, bool[] ext) {
-        List<INPUT> list = new List<INPUT>();
-        for (int i = 0; i < vks.Length; i++)
-            list.Add(Key((ushort)vks[i], 0, ext[i] ? KEYEVENTF_EXTENDEDKEY : 0));
-        for (int i = vks.Length - 1; i >= 0; i--)
-            list.Add(Key((ushort)vks[i], 0, (ext[i] ? KEYEVENTF_EXTENDEDKEY : 0) | KEYEVENTF_KEYUP));
-        Send(list);
+    // Mode jeu (game) : touches envoyées par code matériel (scancode), comme le ferait un vrai clavier,
+    // et maintenues holdMs millisecondes : les jeux qui lisent le clavier image par image (DirectInput,
+    // Raw Input) ignorent les touches sans scancode ou relâchées aussitôt.
+    public static void Chord(int[] vks, bool[] ext, bool game, int holdMs) {
+        List<INPUT> down = new List<INPUT>();
+        List<INPUT> up = new List<INPUT>();
+        for (int i = 0; i < vks.Length; i++) {
+            uint flags = ext[i] ? KEYEVENTF_EXTENDEDKEY : 0;
+            ushort vk = (ushort)vks[i];
+            ushort scan = 0;
+            if (game) {
+                uint sc = MapVirtualKey((uint)vks[i], 4); // MAPVK_VK_TO_VSC_EX
+                if (sc != 0) {
+                    scan = (ushort)(sc & 0xFF);
+                    if ((sc & 0xFF00) == 0xE000) flags |= KEYEVENTF_EXTENDEDKEY;
+                    flags |= KEYEVENTF_SCANCODE;
+                    vk = 0;
+                }
+            }
+            down.Add(Key(vk, scan, flags));
+            up.Insert(0, Key(vk, scan, flags | KEYEVENTF_KEYUP));
+        }
+        if (game && holdMs > 0) {
+            Send(down);
+            System.Threading.Thread.Sleep(holdMs);
+            Send(up);
+        } else {
+            down.AddRange(up);
+            Send(down);
+        }
     }
+    public static void Chord(int[] vks, bool[] ext) { Chord(vks, ext, false, 0); }
 
     public static void Type(string text) {
         List<INPUT> list = new List<INPUT>();
@@ -121,7 +147,7 @@ function Invoke-DeckCommand($cmd) {
         'chord' {
             [int[]]$vks = @($cmd.seq | ForEach-Object { [int]$_[0] })
             [bool[]]$ext = @($cmd.seq | ForEach-Object { [bool]$_[1] })
-            [DeckInput]::Chord($vks, $ext)
+            [DeckInput]::Chord($vks, $ext, [bool]$cmd.game, [int]$cmd.hold)
             return @{}
         }
         'text' { [DeckInput]::Type([string]$cmd.text); return @{} }
