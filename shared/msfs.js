@@ -535,7 +535,7 @@ const rafEventToggle = (label, event, stateVar, title, onTitle, { onColor = ON_G
 });
 // Sélecteur à positions (0, 1, 2…) : tourner = position suivante / précédente, sans dépasser
 // les butées ; la touche affiche le nom de la position.
-const rafSelector = (label, stateVar, labels, title) => {
+const rafSelector = (label, stateVar, labels, title, { images = null } = {}) => {
   const v = `(L:${stateVar}, Number)`;
   const max = labels.length - 1;
   return {
@@ -547,11 +547,14 @@ const rafSelector = (label, stateVar, labels, title) => {
       inc: code(`${v} 1 + ${max} min (>L:${stateVar}, Number)`),
       dec: code(`${v} 1 - 0 max (>L:${stateVar}, Number)`),
       press: null,
-      display: { simvar: lvar(stateVar), unit: 'number', labels },
+      display: { simvar: lvar(stateVar), unit: 'number', labels, ...(images ? { images } : {}) },
     },
-    face: { title, icon: null, color: '#161b24' },
+    face: { title, icon: images ? images[0] : null, color: '#161b24', ...(images ? { showTitle: false } : {}) },
   };
 };
+
+const AEC_LABELS = ['STOP', 'IDLE', 'NORM', 'FIX'];
+const aecImages = (side) => AEC_LABELS.map((l) => `${RAF_FACES}/rafale-aec${side}-${l.toLowerCase()}.svg`);
 
 export const RAFALE_COCKPIT_PRESETS = [
   rafVar('Batterie', 'AZP_RAF_ELECTRICAL_BATTERY_MASTER_SWITCH_STATE', 'Batterie', 'BATTERIE', 'battery'),
@@ -589,8 +592,8 @@ export const RAFALE_COCKPIT_PRESETS = [
   rafEventToggle('Suivi de terrain (TF)', 'AZP_RAF_AP_TF_TOGGLE', 'AZP_RAF_FBW_TERRAIN_FOLLOW_ACTIVE', 'TF', 'TF', { onColor: '#0369a1' }),
   rafKnob('Altitude cible du pilote automatique', 'AZP_RAF_AP_ALT_VAR', 'AP ALT', { push: false }),
   // Moteurs, électricité, conditionnement d'air.
-  rafSelector('Commande moteur auxiliaire gauche (AEC)', 'AZP_RAF_ENGINE_AUXILIARY_LEVER_POS:1', ['STOP', 'IDLE', 'NORM', 'FIX'], 'AEC G'),
-  rafSelector('Commande moteur auxiliaire droite (AEC)', 'AZP_RAF_ENGINE_AUXILIARY_LEVER_POS:2', ['STOP', 'IDLE', 'NORM', 'FIX'], 'AEC D'),
+  rafSelector('Commande moteur auxiliaire gauche (AEC)', 'AZP_RAF_ENGINE_AUXILIARY_LEVER_POS:1', AEC_LABELS, 'AEC G', { images: aecImages('g') }),
+  rafSelector('Commande moteur auxiliaire droite (AEC)', 'AZP_RAF_ENGINE_AUXILIARY_LEVER_POS:2', AEC_LABELS, 'AEC D', { images: aecImages('d') }),
   rafFaceToggle('Groupe auxiliaire (APU / TGA)', 'AZP_RAF_ENGINE_TGA_TOGGLE_PRESSED', 'apu', 'APU SWITCH'),
   rafFaceToggle('Conditionnement d’air (ECS, démarre l’APU si besoin)', 'AZP_RAF_AIR_CONDITIONING_TOGGLE_PRESSED', 'ecs'),
   // Sélecteur 5K : touche 2 × 2 dont le visuel suit la variable de position de l'avion

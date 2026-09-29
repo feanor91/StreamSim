@@ -283,7 +283,7 @@ commandes de la documentation AzurPoly (*Custom variables and events*) :
   de mode de la MFK (R1, R2, H, BULL, BINGO, DEST, ALT, affiché sur la touche) ;
 - pilote automatique : marche/arrêt, **A/T**, **TF** (état affiché), molette
   d'altitude cible ;
-- commandes moteur auxiliaires **AEC** gauche et droite (STOP, IDLE, NORM, FIX) ;
+- commandes moteur auxiliaires **AEC** gauche et droite (STOP, IDLE, NORM, FIX), avec un visuel de levier par position ;
 - **APU** et **ECS** (climatisation, démarre l'APU si besoin), avec un visuel
   éteint / allumé (l'APU suit l'état réel de l'avion ; l'ECS, dont la variable n'est pas relevée, celui de la touche) ;
 - **sélecteur de source électrique 5K** (OFF, TEST, STBY, NORM, START L, START R), en
