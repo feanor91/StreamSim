@@ -285,7 +285,7 @@ commandes de la documentation AzurPoly (*Custom variables and events*) :
   d'altitude cible ;
 - commandes moteur auxiliaires **AEC** gauche et droite (STOP, IDLE, NORM, FIX) ;
 - **APU** et **ECS** (climatisation, démarre l'APU si besoin), avec un visuel
-  éteint / allumé (état de la touche : la variable de l'avion n'est pas encore relevée) ;
+  éteint / allumé (l'APU suit l'état réel de l'avion ; l'ECS, dont la variable n'est pas relevée, celui de la touche) ;
 - **sélecteur de source électrique 5K** (OFF, TEST, STBY, NORM, START L, START R), en
   touche 2 × 2 dont le visuel suit la position réelle du sélecteur dans l'avion ;
 - acquittement des alarmes, **largage d'urgence**, rechargement du canon.

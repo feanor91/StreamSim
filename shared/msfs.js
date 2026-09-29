@@ -511,10 +511,10 @@ const rafKnob = (label, base, title, { push = true, images = null, start = 0, sp
 // Voyant à visuel complet (éteint / allumé) : l'état est celui de la touche, faute de variable
 // de l'avion connue pour le lire.
 const RAF_FACES = '/public/icons/faces';
-const rafFaceToggle = (label, event, name) => ({
+const rafFaceToggle = (label, event, name, simvar = null) => ({
   label,
   desc: 'Rafale · code avionique (MobiFlight)',
-  action: { type: 'toggle', same: true, actions: [code(`(>H:${event})`)] },
+  action: { type: 'toggle', same: true, ...(simvar ? { sync: { simvar } } : {}), actions: [code(`(>H:${event})`)] },
   face: { title: name.toUpperCase(), icon: `${RAF_FACES}/rafale-${name}-off.svg`, color: '#161b24', showTitle: false },
   alt: { title: name.toUpperCase(), icon: `${RAF_FACES}/rafale-${name}-on.svg`, color: '#161b24', showTitle: false },
 });
@@ -591,7 +591,7 @@ export const RAFALE_COCKPIT_PRESETS = [
   // Moteurs, électricité, conditionnement d'air.
   rafSelector('Commande moteur auxiliaire gauche (AEC)', 'AZP_RAF_ENGINE_AUXILIARY_LEVER_POS:1', ['STOP', 'IDLE', 'NORM', 'FIX'], 'AEC G'),
   rafSelector('Commande moteur auxiliaire droite (AEC)', 'AZP_RAF_ENGINE_AUXILIARY_LEVER_POS:2', ['STOP', 'IDLE', 'NORM', 'FIX'], 'AEC D'),
-  rafFaceToggle('Groupe auxiliaire (APU / TGA)', 'AZP_RAF_ENGINE_TGA_TOGGLE_PRESSED', 'apu'),
+  rafFaceToggle('Groupe auxiliaire (APU / TGA)', 'AZP_RAF_ENGINE_TGA_TOGGLE_PRESSED', 'apu', 'APU SWITCH'),
   rafFaceToggle('Conditionnement d’air (ECS, démarre l’APU si besoin)', 'AZP_RAF_AIR_CONDITIONING_TOGGLE_PRESSED', 'ecs'),
   // Sélecteur 5K : touche 2 × 2 dont le visuel suit la variable de position de l'avion
   // (0 % OFF, 25 TEST, 37 START L, 50 NORM, 63 START R, 75 STBY ; START L/R reviennent sur NORM).

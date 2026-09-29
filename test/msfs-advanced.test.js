@@ -159,7 +159,7 @@ test('Rafale : préréglages et nom de l’avion (MSFS 2024)', async () => {
     const codes = [a, ...(a.steps ?? []), ...(a.actions ?? []), a.inc, a.dec, a.press].filter((s) => s?.kind === 'code').map((s) => s.code);
     assert.ok(vars.length || codes.length, p.label);
     for (const c of codes) assert.match(c, /AZP_RAF_/, p.label);
-    for (const v of vars) assert.ok(isValidSimvar(v) && v.startsWith('L:AZP_RAF_'), `${p.label} : ${v}`);
+    for (const v of vars) assert.ok(isValidSimvar(v) && (v.startsWith('L:AZP_RAF_') || v === 'APU SWITCH'), `${p.label} : ${v}`);
   }
   // Commandes documentées par AzurPoly (« Custom variables and events ») toutes présentes.
   const allCodes = JSON.stringify(RAFALE_COCKPIT_PRESETS);
@@ -178,6 +178,7 @@ test('Rafale : préréglages et nom de l’avion (MSFS 2024)', async () => {
   assert.deepEqual(k5.face.span, { w: 2, h: 2 });
   assert.equal(k5.action.display.simvar, 'L:AZP_RAF_ELECTRICAL_MAIN_SOURCE_KNOB_ANIM');
   assert.equal(k5.action.display.values.length, 6);
+  assert.equal(RAFALE_COCKPIT_PRESETS.find((p) => p.face.title === 'APU').action.sync.simvar, 'APU SWITCH');
   const aec = RAFALE_COCKPIT_PRESETS.find((p) => p.label.includes('auxiliaire gauche')).action;
   assert.equal(aec.inc.code, '(L:AZP_RAF_ENGINE_AUXILIARY_LEVER_POS:1, Number) 1 + 3 min (>L:AZP_RAF_ENGINE_AUXILIARY_LEVER_POS:1, Number)');
   assert.equal(aec.dec.code, '(L:AZP_RAF_ENGINE_AUXILIARY_LEVER_POS:1, Number) 1 - 0 max (>L:AZP_RAF_ENGINE_AUXILIARY_LEVER_POS:1, Number)');
