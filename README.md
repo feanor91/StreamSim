@@ -285,10 +285,9 @@ commandes de la documentation AzurPoly (*Custom variables and events*) :
   d'altitude cible ;
 - commandes moteur auxiliaires **AEC** gauche et droite (STOP, IDLE, NORM, FIX) ;
 - **APU** et **ECS** (climatisation, démarre l'APU si besoin), avec un visuel
-  éteint / allumé ; **sélecteur de source électrique 5K** (OFF, TEST, STBY, NORM,
-  START L, START R), en touche 2 × 2 dont le visuel suit la position. Faute de variable
-  de l'avion connue, l'état de ces touches est celui de la touche elle-même : tourner
-  le 5K jusqu'en butée OFF recale sa position ;
+  éteint / allumé (état de la touche : la variable de l'avion n'est pas encore relevée) ;
+- **sélecteur de source électrique 5K** (OFF, TEST, STBY, NORM, START L, START R), en
+  touche 2 × 2 dont le visuel suit la position réelle du sélecteur dans l'avion ;
 - acquittement des alarmes, **largage d'urgence**, rechargement du canon.
 
 Le Rafale n'expose pas ses systèmes de cockpit (armement, écrans, pilote

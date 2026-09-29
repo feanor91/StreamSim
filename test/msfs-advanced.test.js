@@ -176,6 +176,8 @@ test('Rafale : préréglages et nom de l’avion (MSFS 2024)', async () => {
   const k5 = RAFALE_COCKPIT_PRESETS.find((p) => p.face.title === '5K');
   assert.equal(k5.action.display.images.length, 6);
   assert.deepEqual(k5.face.span, { w: 2, h: 2 });
+  assert.equal(k5.action.display.simvar, 'L:AZP_RAF_ELECTRICAL_MAIN_SOURCE_KNOB_ANIM');
+  assert.equal(k5.action.display.values.length, 6);
   const aec = RAFALE_COCKPIT_PRESETS.find((p) => p.label.includes('auxiliaire gauche')).action;
   assert.equal(aec.inc.code, '(L:AZP_RAF_ENGINE_AUXILIARY_LEVER_POS:1, Number) 1 + 3 min (>L:AZP_RAF_ENGINE_AUXILIARY_LEVER_POS:1, Number)');
   assert.equal(aec.dec.code, '(L:AZP_RAF_ENGINE_AUXILIARY_LEVER_POS:1, Number) 1 - 0 max (>L:AZP_RAF_ENGINE_AUXILIARY_LEVER_POS:1, Number)');

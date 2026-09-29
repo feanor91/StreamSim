@@ -495,7 +495,7 @@ const rafPage = (label, events, animVar, title) => ({
 });
 // Molette sans butée : _INC / _DEC en tournant, _PUSHED à l'appui (validation).
 // `images` : un visuel de touche par position (position estimée sur le Deck, départ à `start`).
-const rafKnob = (label, base, title, { push = true, images = null, start = 0, span = null, sensitivity = 'normal' } = {}) => ({
+const rafKnob = (label, base, title, { push = true, images = null, start = 0, span = null, sensitivity = 'normal', display = null } = {}) => ({
   label,
   desc: 'Rafale · bouton rotatif (MobiFlight)',
   action: {
@@ -504,7 +504,7 @@ const rafKnob = (label, base, title, { push = true, images = null, start = 0, sp
     inc: code(`(>H:${base}_INC)`),
     dec: code(`(>H:${base}_DEC)`),
     press: push ? code(`(>H:${base}_PUSHED)`) : null,
-    display: images ? { images, start } : null,
+    display: images ? { ...display, images, start } : null,
   },
   face: { title, icon: images ? images[start] : null, color: '#161b24', ...(images ? { showTitle: false } : {}), ...(span ? { span } : {}) },
 });
@@ -593,10 +593,12 @@ export const RAFALE_COCKPIT_PRESETS = [
   rafSelector('Commande moteur auxiliaire droite (AEC)', 'AZP_RAF_ENGINE_AUXILIARY_LEVER_POS:2', ['STOP', 'IDLE', 'NORM', 'FIX'], 'AEC D'),
   rafFaceToggle('Groupe auxiliaire (APU / TGA)', 'AZP_RAF_ENGINE_TGA_TOGGLE_PRESSED', 'apu'),
   rafFaceToggle('Conditionnement d’air (ECS, démarre l’APU si besoin)', 'AZP_RAF_AIR_CONDITIONING_TOGGLE_PRESSED', 'ecs'),
-  // Sélecteur 5K : OFF, TEST, STBY, NORM, START L, START R ; touche 2 × 2 (visuel détaillé).
+  // Sélecteur 5K : touche 2 × 2 dont le visuel suit la variable de position de l'avion
+  // (0 % OFF, 25 TEST, 37 START L, 50 NORM, 63 START R, 75 STBY ; START L/R reviennent sur NORM).
   rafKnob('Sélecteur de source électrique (5K)', 'AZP_RAF_ELECTRICAL_MAIN_SOURCE_KNOB', '5K', {
     push: false,
-    images: ['off', 'test', 'stby', 'norm', 'l', 'r'].map((p) => `${RAF_FACES}/rafale-5k-${p}.svg`),
+    images: ['off', 'test', 'l', 'norm', 'r', 'stby'].map((p) => `${RAF_FACES}/rafale-5k-${p}.svg`),
+    display: { simvar: lvar('AZP_RAF_ELECTRICAL_MAIN_SOURCE_KNOB_ANIM'), unit: 'percent', values: [0, 25, 37, 50, 63, 75] },
     start: 0,
     span: { w: 2, h: 2 },
     sensitivity: 'fine',

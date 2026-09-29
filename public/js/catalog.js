@@ -388,7 +388,14 @@ function dialFace(key, live) {
   // Molette à positions nommées avec un visuel par position (ex. sélecteur 5K du Rafale).
   if (Array.isArray(d?.images) && d.images.length) {
     const n = d.images.length;
-    const pos = Math.min(n - 1, Math.max(0, Math.round(Number(live.value ?? d.start ?? 0)) || 0));
+    const raw = Number(live.value ?? d.start ?? 0) || 0;
+    let pos;
+    if (Array.isArray(d.values) && d.values.length === n) {
+      // Valeur lue dans le simulateur (ex. 0..100 %) → position la plus proche.
+      pos = d.values.reduce((best, v, i) => (Math.abs(v - raw) < Math.abs(d.values[best] - raw) ? i : best), 0);
+    } else {
+      pos = Math.min(n - 1, Math.max(0, Math.round(raw)));
+    }
     const full = h('div', { class: 'keyface kf-full-key' }, h('img', { class: 'kf-icon kf-full', src: d.images[pos], alt: '', draggable: 'false' }));
     return full;
   }
