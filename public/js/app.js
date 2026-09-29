@@ -3,7 +3,7 @@ import { api, clientId, subscribe } from './api.js';
 import { h, icon, toast, promptModal, confirmModal, openMenu, openModal } from './dom.js';
 import {
   ACTION_TYPES, STEP_TYPES, DELAY_TYPE, LIBRARY, COLORS, EMOJIS,
-  libraryItemInfo, createFromLibrary, keyFace, isMac, isIconPath,
+  libraryItemInfo, createFromLibrary, keyFace, isMac, isIconPath, setGameDefault,
 } from './catalog.js';
 import { computeCells, placementError, findFreeSlot, keySpan, stateKey } from '/shared/layout.js';
 import { SIMHUB_PROPERTIES } from '/shared/simhub.js';
@@ -153,6 +153,7 @@ async function flushSave() {
 // Rendu
 // ---------------------------------------------------------------------------
 function renderAll() {
+  setGameDefault(!!state.config?.settings?.gameMode);
   renderProfile();
   renderTabs();
   renderLayoutSelect();
@@ -866,8 +867,20 @@ function hotkeyEditor(getAction, tag) {
     chips,
     keySelect,
     h('label', { class: 'switch', style: { marginTop: '8px' }, title: 'Pour les jeux et simulateurs qui ignorent les touches envoyées par le logiciel : la touche est envoyée par son code matériel et maintenue 60 ms.' },
-      h('input', { type: 'checkbox', checked: !!getAction().game, onchange: (e) => commit(() => (getAction().game = e.target.checked), { render: 'key' }) }),
+      h('input', { type: 'checkbox', checked: !!getAction().game, onchange: (e) => commit(() => (getAction().game = e.target.checked)) }),
       'Mode jeu (touche envoyée comme un vrai clavier)'),
+    getAction().game
+      ? h('label', { class: 'field', style: { marginTop: '6px' } }, h('span', {}, 'Durée d’appui (ms)'),
+        h('input', {
+          type: 'number', min: 10, max: 500, step: 10, placeholder: '60', value: getAction().hold ?? '',
+          oninput: (e) => commit(() => {
+            const v = Math.round(Number(e.target.value));
+            if (v >= 10) getAction().hold = Math.min(v, 500);
+            else delete getAction().hold;
+          }, { tag: `${tag}:hold`, render: 'key' }),
+        }),
+        h('span', { class: 'hint' }, 'Temps pendant lequel la touche reste enfoncée (60 par défaut, de 10 à 500). Augmentez-le si le jeu manque des appuis.'))
+      : null,
     h('label', { class: 'field', style: { marginTop: '6px' } }, h('span', {}, 'Répéter'),
       h('input', {
         type: 'number', min: 1, max: 50, value: getAction().repeat ?? 1,
@@ -2260,6 +2273,16 @@ function profileMenu() {
         const id = profile().id;
         commit((c) => (c.profiles = c.profiles.filter((p) => p.id !== id)));
         switchProfile(state.config.profiles[0].id);
+      },
+    },
+    '-',
+    {
+      label: 'Mode jeu automatique sur les nouvelles touches',
+      on: !!state.config.settings?.gameMode,
+      run: () => {
+        const next = !state.config.settings?.gameMode;
+        commit((c) => (c.settings = { ...c.settings, gameMode: next }));
+        toast(next ? 'Les nouveaux raccourcis clavier auront le mode jeu coché.' : 'Mode jeu automatique désactivé.', 'ok');
       },
     },
     '-',
