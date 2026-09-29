@@ -93,3 +93,15 @@ test('stockage : création, sauvegarde atomique et relecture', async () => {
   assert.equal(again.profiles[0].name, 'Renommé');
   await fs.rm(dir, { recursive: true, force: true });
 });
+
+test('raccourci en mode jeu : appui maintenu, sans changer l’envoi habituel', async () => {
+  const ex = recorder();
+  await runAction(ex, { type: 'hotkey', hotkey: { key: 'F', modifiers: [] }, game: true });
+  await runAction(ex, { type: 'hotkey', hotkey: { key: 'F', modifiers: [] }, game: true, hold: 5000 });
+  await runAction(ex, { type: 'hotkey', hotkey: { key: 'F', modifiers: [] } });
+  assert.deepEqual(ex.calls, [
+    ['hotkey', { key: 'F', modifiers: [] }, { game: true, hold: 60 }],
+    ['hotkey', { key: 'F', modifiers: [] }, { game: true, hold: 500 }],
+    ['hotkey', { key: 'F', modifiers: [] }],
+  ]);
+});

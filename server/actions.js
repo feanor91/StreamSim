@@ -78,7 +78,9 @@ export async function runAction(executor, action, depth = 0, ctx = {}) {
       await focusTarget(executor, action.target);
       const repeat = Math.min(Math.max(Number(action.repeat) || 1, 1), 50);
       for (let i = 0; i < repeat; i++) {
-        await executor.hotkey(hk);
+        // Mode jeu : touches envoyées comme un vrai clavier (codes matériels, appui maintenu).
+        if (action.game) await executor.hotkey(hk, { game: true, hold: Math.min(Math.max(Number(action.hold) || 60, 10), 500) });
+        else await executor.hotkey(hk);
         if (i < repeat - 1) await sleep(40);
       }
       return;
