@@ -2,7 +2,7 @@ import { api, subscribe } from './api.js';
 import { h, toast } from './dom.js';
 import { keyFace } from './catalog.js';
 import { computeCells, stateKey, fitGrid, orientCell } from '/shared/layout.js';
-import { DIAL_SENSITIVITY, clamp } from '/shared/controls.js';
+import { DIAL_SENSITIVITY, STEPPED_SENSITIVITY, STEPPED_DELAY_MS, clamp } from '/shared/controls.js';
 import { clientId } from './api.js';
 
 const $ = (id) => document.getElementById(id);
@@ -225,6 +225,7 @@ function buildControl(pg, cell) {
   let acc = 0;
   let holdTimer = null;
   let held = false;
+  let lastStepAt = 0;
 
   // Molette bornée (ex. luminosité de 0 à 100 %) : le cadran s'arrête aux limites au lieu de
   // tourner dans le vide. Estimation locale de la valeur, recalée à chaque valeur reçue.
@@ -323,7 +324,16 @@ function buildControl(pg, cell) {
       acc += e.clientX - lastX - (e.clientY - lastY);
       lastX = e.clientX;
       lastY = e.clientY;
-      const sens = DIAL_SENSITIVITY[key.action.sensitivity] ?? DIAL_SENSITIVITY.normal;
+      // Sélecteur à positions (un visuel par position) : glisser plus long par cran, un seul cran à la
+      // fois et une temporisation entre deux crans, pour s'arrêter sur la position voulue.
+      const stepped = !!key.action.display?.images?.length;
+      if (stepped && Date.now() - lastStepAt < STEPPED_DELAY_MS) {
+        acc = 0;
+        return;
+      }
+      const sens = stepped
+        ? STEPPED_SENSITIVITY[key.action.sensitivity] ?? STEPPED_SENSITIVITY.normal
+        : DIAL_SENSITIVITY[key.action.sensitivity] ?? DIAL_SENSITIVITY.normal;
       let n = 0;
       while (acc >= sens) {
         acc -= sens;
@@ -333,7 +343,11 @@ function buildControl(pg, cell) {
         acc += sens;
         n--;
       }
-      if (n) step(n);
+      if (n) {
+        if (stepped) n = Math.sign(n);
+        lastStepAt = Date.now();
+        step(n);
+      }
     } else if (moved) {
       setLevel(levelAt(e));
     }
