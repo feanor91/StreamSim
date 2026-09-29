@@ -4,8 +4,8 @@
 <rect x="4" y="4" width="136" height="136" rx="13" fill="none" stroke="#2c3135" stroke-width="2"/>
 <text x="12" y="22" font-family="DejaVu Sans" font-weight="bold" font-size="13" fill="#9aa0a6">5K</text>
 <line x1="72.0" y1="100.0" x2="72.0" y2="106.0" stroke="#4a5055" stroke-width="2.5" stroke-linecap="round"/>
-<line x1="44.8" y1="82.7" x2="39.4" y2="85.2" stroke="#4a5055" stroke-width="2.5" stroke-linecap="round"/>
-<line x1="99.2" y1="82.7" x2="104.6" y2="85.2" stroke="#4a5055" stroke-width="2.5" stroke-linecap="round"/>
+<line x1="42" y1="70" x2="36" y2="70" stroke="#4a5055" stroke-width="2.5" stroke-linecap="round"/>
+<line x1="102" y1="70" x2="108" y2="70" stroke="#4a5055" stroke-width="2.5" stroke-linecap="round"/>
 <line x1="72.0" y1="40.0" x2="72.0" y2="34.0" stroke="#3ddc84" stroke-width="4" stroke-linecap="round"/>
 <line x1="56.1" y1="44.6" x2="52.9" y2="39.5" stroke="#4a5055" stroke-width="2.5" stroke-linecap="round"/>
 <line x1="87.9" y1="44.6" x2="91.1" y2="39.5" stroke="#4a5055" stroke-width="2.5" stroke-linecap="round"/>

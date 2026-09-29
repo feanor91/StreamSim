@@ -3,6 +3,10 @@
 
 export const clamp = (x, lo, hi) => Math.min(hi, Math.max(lo, x));
 
+/** Sélecteurs à positions : pixels de glissement par position, et temporisation entre deux positions. */
+export const STEPPED_SENSITIVITY = { fine: 110, normal: 80, fast: 50 };
+export const STEPPED_DELAY_MS = 350;
+
 /** Nombre maximal de crans traités par envoi (évite les rafales démesurées). */
 export const MAX_STEPS = 40;
 
