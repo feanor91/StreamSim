@@ -360,6 +360,9 @@ export const EMOJIS = (
 // Icône fournie par l'application (ex. /public/icons/avia/gear-down.svg).
 export const isIconPath = (icon) => typeof icon === 'string' && /^\/public\/icons\/[\w/-]+\.svg$/.test(icon);
 
+// Visuel complet d'une touche (fond, texte et voyant compris) : affiché en plein cadre, sans couleur ni titre.
+export const isFacePath = (icon) => typeof icon === 'string' && /^\/public\/icons\/faces\/[\w-]+\.svg$/.test(icon);
+
 function iconNode(icon, cls = 'kf-icon') {
   if (!icon) return null;
   if (icon.startsWith('data:')) return h('img', { class: cls, src: icon, alt: '', draggable: 'false' });
@@ -382,6 +385,13 @@ function dialFace(key, live) {
   });
   dial.style.setProperty('--angle', `${live.angle ?? 0}deg`);
   const d = key.action?.display;
+  // Molette à positions nommées avec un visuel par position (ex. sélecteur 5K du Rafale).
+  if (Array.isArray(d?.images) && d.images.length) {
+    const n = d.images.length;
+    const pos = Math.min(n - 1, Math.max(0, Math.round(Number(live.value ?? d.start ?? 0)) || 0));
+    const full = h('div', { class: 'keyface kf-full-key' }, h('img', { class: 'kf-icon kf-full', src: d.images[pos], alt: '', draggable: 'false' }));
+    return full;
+  }
   const hasValue = !!(d?.simvar || d?.input);
   const center = h(
     'span',
@@ -434,6 +444,7 @@ export function keyFace(rawKey, state = 0, live = {}) {
   if (rawKey.action?.type === 'slider') return sliderFace(rawKey, live);
   if (rawKey.action?.type === 'display') return displayFace(rawKey, live);
   const key = faceFor(rawKey, state);
+  if (isFacePath(key.icon)) return h('div', { class: 'keyface kf-full-key' }, h('img', { class: 'kf-icon kf-full', src: key.icon, alt: '', draggable: 'false' }));
   const showTitle = key.showTitle !== false && key.title;
   const hasIcon = !!key.icon;
   const el = h('div', {

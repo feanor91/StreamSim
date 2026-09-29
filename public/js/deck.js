@@ -262,6 +262,14 @@ function buildControl(pg, cell) {
     if (!n) return;
     angles[sk] = (angles[sk] ?? 0) + 15 * n;
     el.querySelector('.kf-dial')?.style.setProperty('--angle', `${angles[sk]}deg`);
+    // Molette à visuels par position sans variable lue dans le simulateur : position estimée ici
+    // (butées aux extrémités, comme sur l'avion) ; tourner jusqu'en butée recale l'estimation.
+    const images = key.action.display?.images;
+    if (isDial && images?.length && !key.action.display.simvar) {
+      const known = Number(state.values[sk] ?? key.action.display.start ?? 0) || 0;
+      state.values[sk] = Math.min(images.length - 1, Math.max(0, Math.round(known) + n));
+      repaint();
+    }
     if (nativeApp) nativeApp.haptic();
     pendingDelta += n;
     flush();

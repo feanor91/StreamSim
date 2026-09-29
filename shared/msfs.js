@@ -494,18 +494,29 @@ const rafPage = (label, events, animVar, title) => ({
   face: { title, icon: null, color: '#161b24' },
 });
 // Molette sans butée : _INC / _DEC en tournant, _PUSHED à l'appui (validation).
-const rafKnob = (label, base, title, { push = true } = {}) => ({
+// `images` : un visuel de touche par position (position estimée sur le Deck, départ à `start`).
+const rafKnob = (label, base, title, { push = true, images = null, start = 0, span = null, sensitivity = 'normal' } = {}) => ({
   label,
   desc: 'Rafale · bouton rotatif (MobiFlight)',
   action: {
     type: 'dial',
-    sensitivity: 'normal',
+    sensitivity,
     inc: code(`(>H:${base}_INC)`),
     dec: code(`(>H:${base}_DEC)`),
     press: push ? code(`(>H:${base}_PUSHED)`) : null,
-    display: null,
+    display: images ? { images, start } : null,
   },
-  face: { title, icon: null, color: '#161b24' },
+  face: { title, icon: images ? images[start] : null, color: '#161b24', ...(images ? { showTitle: false } : {}), ...(span ? { span } : {}) },
+});
+// Voyant à visuel complet (éteint / allumé) : l'état est celui de la touche, faute de variable
+// de l'avion connue pour le lire.
+const RAF_FACES = '/public/icons/faces';
+const rafFaceToggle = (label, event, name) => ({
+  label,
+  desc: 'Rafale · code avionique (MobiFlight)',
+  action: { type: 'toggle', same: true, actions: [code(`(>H:${event})`)] },
+  face: { title: name.toUpperCase(), icon: `${RAF_FACES}/rafale-${name}-off.svg`, color: '#161b24', showTitle: false },
+  alt: { title: name.toUpperCase(), icon: `${RAF_FACES}/rafale-${name}-on.svg`, color: '#161b24', showTitle: false },
 });
 // Simple appui : un événement H: (documentation AzurPoly, « Custom variables and events »).
 const rafEvent = (label, event, title, { color = '#161b24' } = {}) => ({
@@ -580,9 +591,16 @@ export const RAFALE_COCKPIT_PRESETS = [
   // Moteurs, électricité, conditionnement d'air.
   rafSelector('Commande moteur auxiliaire gauche (AEC)', 'AZP_RAF_ENGINE_AUXILIARY_LEVER_POS:1', ['STOP', 'IDLE', 'NORM', 'FIX'], 'AEC G'),
   rafSelector('Commande moteur auxiliaire droite (AEC)', 'AZP_RAF_ENGINE_AUXILIARY_LEVER_POS:2', ['STOP', 'IDLE', 'NORM', 'FIX'], 'AEC D'),
-  rafEvent('Groupe auxiliaire (APU / TGA)', 'AZP_RAF_ENGINE_TGA_TOGGLE_PRESSED', 'APU'),
-  rafEvent('Conditionnement d’air (ECS, démarre l’APU si besoin)', 'AZP_RAF_AIR_CONDITIONING_TOGGLE_PRESSED', 'ECS'),
-  rafKnob('Sélecteur de source électrique (5K)', 'AZP_RAF_ELECTRICAL_MAIN_SOURCE_KNOB', '5K', { push: false }),
+  rafFaceToggle('Groupe auxiliaire (APU / TGA)', 'AZP_RAF_ENGINE_TGA_TOGGLE_PRESSED', 'apu'),
+  rafFaceToggle('Conditionnement d’air (ECS, démarre l’APU si besoin)', 'AZP_RAF_AIR_CONDITIONING_TOGGLE_PRESSED', 'ecs'),
+  // Sélecteur 5K : OFF, TEST, STBY, NORM, START L, START R ; touche 2 × 2 (visuel détaillé).
+  rafKnob('Sélecteur de source électrique (5K)', 'AZP_RAF_ELECTRICAL_MAIN_SOURCE_KNOB', '5K', {
+    push: false,
+    images: ['off', 'test', 'stby', 'norm', 'l', 'r'].map((p) => `${RAF_FACES}/rafale-5k-${p}.svg`),
+    start: 3,
+    span: { w: 2, h: 2 },
+    sensitivity: 'fine',
+  }),
   // Alarmes et armement.
   rafEvent('Acquitter les alarmes', 'AZP_RAF_ALARMS_ACKNOWLEDGE', 'ACQ ALARM', { color: '#78350f' }),
   rafEvent('Largage d’urgence des charges', 'AZP_RAF_WEAPONS_EMERGENCY_JETTISON_PRESSED', 'LARGAGE', { color: '#7f1d1d' }),
