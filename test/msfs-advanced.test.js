@@ -159,7 +159,7 @@ test('Rafale : préréglages et nom de l’avion (MSFS 2024)', async () => {
     const codes = [a, ...(a.steps ?? []), ...(a.actions ?? []), a.inc, a.dec, a.press].filter((s) => s?.kind === 'code').map((s) => s.code);
     assert.ok(vars.length || codes.length, p.label);
     for (const c of codes) assert.match(c, /AZP_RAF_/, p.label);
-    for (const v of vars) assert.ok(isValidSimvar(v) && v.startsWith('L:AZP_RAF_'), `${p.label} : ${v}`);
+    for (const v of vars) assert.ok(isValidSimvar(v) && (v.startsWith('L:AZP_RAF_') || v === 'APU SWITCH'), `${p.label} : ${v}`);
   }
   // Commandes documentées par AzurPoly (« Custom variables and events ») toutes présentes.
   const allCodes = JSON.stringify(RAFALE_COCKPIT_PRESETS);
@@ -168,6 +168,17 @@ test('Rafale : préréglages et nom de l’avion (MSFS 2024)', async () => {
     'AVIONICS_VISUALISATION_KNOB_RIGHT_PUSHED', 'ELECTRICAL_MAIN_SOURCE_KNOB_INC', 'ENGINE_TGA_TOGGLE_PRESSED',
     'VTLD_SWITCH_MOVED_HSI', 'VTLD_SWITCH_MOVED_FUEL', 'VTLD_SWITCH_MOVED_ECM', 'VTLD_SWITCH_MOVED_SITAC', 'VTLG_SWITCH_MOVED_INFO',
     'WEAPONS_EMERGENCY_JETTISON_PRESSED', 'WEAPONS_GUN_REFILL']) assert.ok(allCodes.includes(`(>H:AZP_RAF_${ev})`), ev);
+  // Visuels de touche (APU, ECS, 5K) : fichiers présents, un visuel par position du sélecteur 5K.
+  const { existsSync } = await import('node:fs');
+  const faceIcons = RAFALE_COCKPIT_PRESETS.flatMap((p) => [p.face.icon, p.alt?.icon, ...(p.action.display?.images ?? [])]).filter((i) => i?.includes('/faces/'));
+  assert.equal(faceIcons.length >= 9, true);
+  for (const i of faceIcons) assert.ok(existsSync(new URL(`..${i.replace('/public/', '/public/')}`, import.meta.url)), i);
+  const k5 = RAFALE_COCKPIT_PRESETS.find((p) => p.face.title === '5K');
+  assert.equal(k5.action.display.images.length, 6);
+  assert.deepEqual(k5.face.span, { w: 2, h: 2 });
+  assert.equal(k5.action.display.simvar, 'L:AZP_RAF_ELECTRICAL_MAIN_SOURCE_KNOB_ANIM');
+  assert.equal(k5.action.display.values.length, 6);
+  assert.equal(RAFALE_COCKPIT_PRESETS.find((p) => p.face.title === 'APU').action.sync.simvar, 'APU SWITCH');
   const aec = RAFALE_COCKPIT_PRESETS.find((p) => p.label.includes('auxiliaire gauche')).action;
   assert.equal(aec.inc.code, '(L:AZP_RAF_ENGINE_AUXILIARY_LEVER_POS:1, Number) 1 + 3 min (>L:AZP_RAF_ENGINE_AUXILIARY_LEVER_POS:1, Number)');
   assert.equal(aec.dec.code, '(L:AZP_RAF_ENGINE_AUXILIARY_LEVER_POS:1, Number) 1 - 0 max (>L:AZP_RAF_ENGINE_AUXILIARY_LEVER_POS:1, Number)');
