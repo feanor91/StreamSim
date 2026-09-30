@@ -83,6 +83,10 @@ function render(direction = 0) {
 
   $('deckProfile').textContent = profile().name;
   $('deckPage').textContent = pg.name;
+  // Plusieurs pages : le nom de la page est un bouton qui ouvre la liste de toutes les pages.
+  const where = document.querySelector('.deck-where');
+  where.classList.toggle('pickable', profile().pages.length > 1);
+  where.title = profile().pages.length > 1 ? 'Toutes les pages' : '';
   const pages = profile().pages;
   // Quelques pages : des points. Beaucoup de pages : un compteur « 3 / 40 » qui ouvre la liste
   // (avec recherche) de toutes les pages ; le glissement du doigt reste possible dans les deux cas.
@@ -98,7 +102,7 @@ function render(direction = 0) {
   );
 }
 
-const MAX_DOTS = 12;
+const MAX_DOTS = 10;
 
 async function openPageList() {
   const id = await pagePicker({ pages: profile().pages, currentId: page().id, focusSearch: false });
@@ -501,6 +505,13 @@ window.addEventListener('resize', () => {
 const SWIPE_START = 18; // px avant de considérer le geste comme un glissement
 let swipe = null;
 
+// Toucher le nom de la page (en haut à gauche) ouvre la liste de toutes les pages.
+function initPageList() {
+  document.querySelector('.deck-where').addEventListener('click', () => {
+    if (profile().pages.length > 1) openPageList();
+  });
+}
+
 function initSwipe() {
   const stage = $('stage');
   const grid = $('deckGrid');
@@ -548,6 +559,7 @@ function initSwipe() {
   stage.addEventListener('pointercancel', end);
 }
 initSwipe();
+initPageList();
 
 // Navigation au clavier / à la molette quand le Deck est ouvert sur un ordinateur.
 document.addEventListener('keydown', (e) => {
