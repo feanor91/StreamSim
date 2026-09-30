@@ -28,6 +28,7 @@ const MAX_BODY = 25 * 1024 * 1024;
 const STATIC = {
   '/': 'public/index.html',
   '/deck': 'public/deck.html',
+  '/docs': 'public/docs.html',
 };
 const MIME = {
   '.html': 'text/html; charset=utf-8',
