@@ -6,6 +6,8 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { Store, findKey, LAYOUTS, validateConfig } from './store.js';
 import { createBackups } from './backups.js';
+import { createIconLibrary } from './icons.js';
+import { currentIconPath } from '../shared/icons.js';
 import { createExecutor } from './executors/index.js';
 import { runAction, toggleAction } from './actions.js';
 import { ToggleStates } from './states.js';
@@ -74,6 +76,7 @@ async function readJson(req) {
 }
 
 async function serveStatic(res, pathname) {
+  pathname = currentIconPath(pathname); // anciens chemins d'icônes (avia/, faces/) toujours servis
   let rel = STATIC[pathname];
   if (!rel) {
     if (!pathname.startsWith('/public/') && !pathname.startsWith('/shared/')) return false;
@@ -145,6 +148,7 @@ export async function startDeckServer({
 } = {}) {
   const store = new Store(dataDir);
   const backups = createBackups(dataDir, { version: VERSION });
+  const iconLibrary = createIconLibrary(dataDir);
   const toggles = new ToggleStates(dataDir);
   const executor = createExecutor({ dryRun, log: (m) => log.log(m) });
   let executorStatus = { ok: false, reason: 'Vérification en cours…' };
@@ -354,6 +358,33 @@ export async function startDeckServer({
         refreshSimWatch();
         backups.autoSave(store.config).catch((e) => log.warn(`Sauvegarde automatique impossible : ${e.message}`));
         return send(res, 200, { revision });
+      }
+
+      // --- Bibliothèque d'icônes de l'utilisateur (voir server/icons.js) ---
+      case 'GET /api/icons':
+        return send(res, 200, await iconLibrary.list());
+
+      case 'POST /api/icons': {
+        requireAdmin(req);
+        const body = await readJson(req);
+        return send(res, 200, { icon: await iconLibrary.save(body) });
+      }
+
+      case 'POST /api/icons/delete': {
+        requireAdmin(req);
+        const { path: p } = await readJson(req);
+        await iconLibrary.remove(String(p ?? '').replace(/^\/user-icons\//, ''));
+        return send(res, 200, { ok: true });
+      }
+
+      case 'GET /api/icons/export':
+        requireAdmin(req);
+        return send(res, 200, await iconLibrary.exportBundle(VERSION));
+
+      case 'POST /api/icons/import': {
+        requireAdmin(req);
+        const body = await readJson(req);
+        return send(res, 200, { result: await iconLibrary.importBundle(body.bundle, { overwrite: !!body.overwrite }), ...(await iconLibrary.list()) });
       }
 
       // --- Sauvegardes de la configuration ---
@@ -581,6 +612,17 @@ export async function startDeckServer({
     const { pathname } = new URL(req.url, 'http://localhost');
     try {
       if (pathname.startsWith('/api/')) return await handleApi(req, res, pathname);
+      if (req.method === 'GET' && pathname.startsWith('/user-icons/')) {
+        const { data, mime } = await iconLibrary.read(decodeURIComponent(pathname.slice('/user-icons/'.length)));
+        // Image seule : une icône SVG ouverte directement ne peut exécuter aucun script.
+        res.writeHead(200, {
+          'Content-Type': mime,
+          'Cache-Control': 'no-cache',
+          'X-Content-Type-Options': 'nosniff',
+          'Content-Security-Policy': "default-src 'none'; style-src 'unsafe-inline'; sandbox",
+        });
+        return res.end(data);
+      }
       if (req.method === 'GET' && (await serveStatic(res, pathname))) return;
       send(res, 404, 'Introuvable');
     } catch (e) {

@@ -170,7 +170,7 @@ test('Rafale : préréglages et nom de l’avion (MSFS 2024)', async () => {
     'WEAPONS_EMERGENCY_JETTISON_PRESSED', 'WEAPONS_GUN_REFILL']) assert.ok(allCodes.includes(`(>H:AZP_RAF_${ev})`), ev);
   // Visuels de touche (APU, ECS, 5K) : fichiers présents, un visuel par position du sélecteur 5K.
   const { existsSync } = await import('node:fs');
-  const faceIcons = RAFALE_COCKPIT_PRESETS.flatMap((p) => [p.face.icon, p.alt?.icon, ...(p.action.display?.images ?? [])]).filter((i) => i?.includes('/faces/'));
+  const faceIcons = RAFALE_COCKPIT_PRESETS.flatMap((p) => [p.face.icon, p.alt?.icon, ...(p.action.display?.images ?? [])]).filter((i) => i?.includes('/touches-completes/'));
   assert.equal(faceIcons.length >= 9, true);
   for (const i of faceIcons) assert.ok(existsSync(new URL(`..${i.replace('/public/', '/public/')}`, import.meta.url)), i);
   const k5 = RAFALE_COCKPIT_PRESETS.find((p) => p.face.title === '5K');

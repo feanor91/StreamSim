@@ -1,6 +1,7 @@
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import { randomUUID } from 'node:crypto';
+import { migrateIconPaths } from '../shared/icons.js';
 
 export const LAYOUTS = {
   mini: { rows: 2, cols: 3, label: 'Mini — 6 touches' },
@@ -73,6 +74,8 @@ export function validateConfig(cfg) {
     }
   }
   if (!ids.has(cfg.activeProfileId)) cfg.activeProfileId = cfg.profiles[0].id;
+  // Configurations des versions ≤ 0.11 : anciens chemins d'icônes (avia/, faces/) → nouvelle organisation.
+  migrateIconPaths(cfg);
   return cfg;
 }
 

@@ -158,6 +158,18 @@ versions publiées. La mise à jour automatique d'Android fonctionne à partir d
     précédé d'une sauvegarde « Avant import »).
   - Les sauvegardes sont stockées dans le dossier `backups` des données
     (`%APPDATA%\StreamSim\data\backups` sous Windows).
+- **Icônes** : trois sources dans l'inspecteur (section *Apparence*) :
+  - *Emoji* ;
+  - *Aviation* : 36 pictogrammes fournis, classés par groupes (train et commandes de vol,
+    feux, pilote automatique, systèmes, radios et divers) ;
+  - *Image* : vos propres images, rangées dans la **bibliothèque d'icônes**.
+  La bibliothèque est un dossier du PC (`icons/` dans le dossier des données, un sous-dossier
+  par thème : `icons/mon-avion/train.png`), servi aux Decks à `/user-icons/…`. Menu du profil →
+  **Bibliothèque d'icônes** : ajout (glisser-déposer, plusieurs images à la fois), dossiers,
+  suppression, **Exporter** / **Importer** (fichier `.json`, comme la configuration, pour
+  changer de PC), et « Ranger les images intégrées aux touches » (déplace les images collées
+  directement dans les touches vers la bibliothèque : configuration plus légère). Les icônes
+  fournies avec l'application sont décrites dans `public/icons/README.md`.
 - **Dispositions** : Mini (2×3), Standard (3×5), Plus (4×4) et XL (4×8).
 - L'enregistrement est automatique. `Ctrl+Z` / `Ctrl+Y` pour annuler/rétablir.
 
@@ -239,7 +251,7 @@ l'emploi (train, frein de parc, volets, aérofreins, compensateur, feux, modes d
 pilote automatique, batterie, avionique, pitot, ceintures, radios, pause,
 pushback…) avec leurs icônes. L'action « Commande MSFS » donne accès à une
 cinquantaine de commandes, ou à n'importe quel événement SimConnect par son nom.
-L'onglet *Aviation* du choix d'icône propose 36 icônes dédiées.
+L'onglet *Aviation* du choix d'icône propose 36 icônes dédiées, par groupes.
 
 #### Trois façons d'agir sur le simulateur
 
@@ -537,7 +549,9 @@ shared/layout.js      Placement des touches (fusion, orientation), bascules
 shared/controls.js    Boutons rotatifs et curseurs : conversions, affichage des valeurs
 shared/msfs.js        Catalogue MSFS : commandes, variables, préréglages
 shared/simhub.js      Catalogue SimHub : propriétés courantes, préréglages
-public/icons/avia/    Icônes aviation (SVG)
+public/icons/aviation/           Icônes aviation par groupe (SVG)
+public/icons/touches-completes/  Visuels de touche entiers, par avion (SVG)
+server/icons.js       Bibliothèque d'icônes de l'utilisateur (dossiers, export, import)
 public/               Interface de configuration (index.html) et Deck (deck.html)
 desktop/              Application PC (Electron) : fenêtre, zone de notification
 android/              Application Android (Kotlin) : connexion, découverte, Deck plein écran

@@ -3,11 +3,13 @@ import { api, clientId, subscribe } from './api.js';
 import { h, icon, toast, promptModal, confirmModal, openMenu, openModal, pagePicker } from './dom.js';
 import {
   ACTION_TYPES, STEP_TYPES, DELAY_TYPE, LIBRARY, COLORS, EMOJIS,
-  libraryItemInfo, createFromLibrary, keyFace, isMac, isIconPath, setGameDefault,
+  libraryItemInfo, createFromLibrary, keyFace, isMac, isIconPath, isImageIcon, setGameDefault,
 } from './catalog.js';
 import { computeCells, placementError, findFreeSlot, keySpan, stateKey } from '/shared/layout.js';
 import { SIMHUB_PROPERTIES } from '/shared/simhub.js';
-import { MSFS_EVENTS, MSFS_EVENT_LABELS, MSFS_SIMVARS, MSFS_NUMERIC_SIMVARS, MSFS_UNITS, AVIA_ICONS, FBW_EVENTS, FBW_PRESETS, isLocalVar } from '/shared/msfs.js';
+import { AVIATION_ICON_GROUPS, aviationIcon } from '/shared/icons.js';
+import { library, refreshIcons, uploadIconFile, openIconLibrary, exportIcons, pickAndImportIcons } from './icons.js';
+import { MSFS_EVENTS, MSFS_EVENT_LABELS, MSFS_SIMVARS, MSFS_NUMERIC_SIMVARS, MSFS_UNITS, FBW_EVENTS, FBW_PRESETS, isLocalVar } from '/shared/msfs.js';
 
 const $ = (id) => document.getElementById(id);
 const clone = (v) => JSON.parse(JSON.stringify(v));
@@ -1806,7 +1808,7 @@ function appearanceSection(i) {
       if (alt) k.alt = { ...(k.alt ?? {}), ...patch };
       else Object.assign(k, patch);
     }, opts);
-  const isImage = key.icon?.startsWith('data:');
+  const isImage = isImageIcon(key.icon);
   if (isImage) state.iconTab = 'image';
   else if (isIconPath(key.icon) && state.iconTab === 'emoji') state.iconTab = 'avia';
 
@@ -1843,22 +1845,25 @@ function appearanceSection(i) {
     ];
   };
 
-  const aviaPanel = () => [
-    h(
-      'div',
-      { class: 'emoji-grid avia-grid' },
-      ...AVIA_ICONS.map((name) => {
-        const src = `/public/icons/avia/${name}.svg`;
-        return h(
-          'button',
-          { class: key.icon === src ? 'on' : '', title: name, onclick: () => setFace({ icon: src }, { render: 'all' }) },
-          h('img', { src, alt: name, draggable: 'false' }),
-        );
-      }),
-    ),
-  ];
+  const aviaPanel = () =>
+    AVIATION_ICON_GROUPS.flatMap((g) => [
+      h('div', { class: 'icon-group-title' }, g.label),
+      h(
+        'div',
+        { class: 'emoji-grid avia-grid' },
+        ...g.icons.map((name) => {
+          const src = aviationIcon(name);
+          return h(
+            'button',
+            { class: key.icon === src ? 'on' : '', title: name, onclick: () => setFace({ icon: src }, { render: 'all' }) },
+            h('img', { src, alt: name, draggable: 'false' }),
+          );
+        }),
+      ),
+    ]);
 
   const imagePanel = () => {
+    if (!library.loaded) refreshIcons().then(() => state.iconTab === 'image' && renderInspector()).catch(() => {});
     const input = h('input', { type: 'file', accept: 'image/*', hidden: true });
     const drop = h(
       'div',
@@ -1866,12 +1871,13 @@ function appearanceSection(i) {
       isImage ? h('img', { src: key.icon, alt: '' }) : h('span', { class: 'ph' }, icon('image')),
       h('span', {}, isImage ? 'Cliquez ou déposez une image pour la remplacer' : 'Cliquez ou déposez une image (PNG, JPG, SVG, GIF)'),
     );
+    // L'image est rangée dans la bibliothèque d'icônes (dossier « divers »), la touche y fait référence.
     const load = async (file) => {
       if (!file || !file.type.startsWith('image/')) return toast('Ce fichier n’est pas une image.', 'err');
       try {
-        setFace({ icon: await resizeImage(file) }, { render: 'all' });
-      } catch {
-        toast('Impossible de lire cette image.', 'err');
+        setFace({ icon: await uploadIconFile(file) }, { render: 'all' });
+      } catch (e) {
+        toast(e.message || 'Impossible de lire cette image.', 'err', 5000);
       }
     };
     input.addEventListener('change', () => load(input.files[0]));
@@ -1886,9 +1892,32 @@ function appearanceSection(i) {
       drop.classList.remove('over');
       load(e.dataTransfer.files[0]);
     });
+    const recent = library.icons.slice(0, 18);
     return [
       drop,
       input,
+      h('div', { class: 'icon-group-title' }, library.icons.length ? `Ma bibliothèque (${library.icons.length})` : 'Ma bibliothèque'),
+      recent.length
+        ? h(
+            'div',
+            { class: 'emoji-grid user-icon-grid' },
+            ...recent.map((it) =>
+              h('button', { class: key.icon === it.path ? 'on' : '', title: `${it.folder} / ${it.name}`, onclick: () => setFace({ icon: it.path }, { render: 'all' }) }, h('img', { src: it.path, alt: it.name, draggable: 'false' })),
+            ),
+          )
+        : h('p', { class: 'hint' }, 'Les images que vous ajoutez sont rangées ici, par dossiers, et réutilisables sur d’autres touches.'),
+      h(
+        'button',
+        {
+          class: 'btn small',
+          onclick: async () => {
+            const picked = await openIconLibrary({ onPick: true, current: key.icon, embeddedCount: embeddedImages().length, onMigrate: migrateEmbeddedImages });
+            if (picked) setFace({ icon: picked }, { render: 'all' });
+          },
+        },
+        icon('folder'),
+        'Ouvrir la bibliothèque (dossiers, export, import)…',
+      ),
       isImage ? h('button', { class: 'btn small danger', onclick: () => setFace({ icon: '' }, { render: 'all' }) }, icon('trash'), 'Retirer l’image') : null,
     ];
   };
@@ -1964,29 +1993,6 @@ function appearanceSection(i) {
 }
 
 // Redimensionne une image en 144×144 (recadrage centré) pour garder une configuration légère.
-function resizeImage(file, size = 144) {
-  return new Promise((resolve, reject) => {
-    const url = URL.createObjectURL(file);
-    const img = new Image();
-    img.onload = () => {
-      const canvas = document.createElement('canvas');
-      canvas.width = canvas.height = size;
-      const ctx = canvas.getContext('2d');
-      const s = Math.min(img.naturalWidth, img.naturalHeight) || size;
-      const sx = ((img.naturalWidth || size) - s) / 2;
-      const sy = ((img.naturalHeight || size) - s) / 2;
-      ctx.drawImage(img, sx, sy, s, s, 0, 0, size, size);
-      URL.revokeObjectURL(url);
-      resolve(canvas.toDataURL('image/png'));
-    };
-    img.onerror = () => {
-      URL.revokeObjectURL(url);
-      reject(new Error('image'));
-    };
-    img.src = url;
-  });
-}
-
 // ---------------------------------------------------------------------------
 // Opérations sur les touches
 // ---------------------------------------------------------------------------
@@ -1994,7 +2000,7 @@ function select(i) {
   if (state.selected === i) return;
   state.selected = i;
   state.faceTab = 0;
-  state.iconTab = keyAt(i)?.icon?.startsWith('data:') ? 'image' : 'emoji';
+  state.iconTab = isImageIcon(keyAt(i)?.icon) ? 'image' : 'emoji';
   renderGrid();
   renderInspector();
 }
@@ -2329,6 +2335,10 @@ function profileMenu() {
       },
     },
     '-',
+    { label: 'Bibliothèque d’icônes…', icon: 'image', run: () => openIconLibrary({ embeddedCount: embeddedImages().length, onMigrate: migrateEmbeddedImages }) },
+    { label: 'Exporter les icônes', icon: 'download', run: () => exportIcons().catch((e) => toast(e.message, 'err')) },
+    { label: 'Importer des icônes', icon: 'upload', run: () => pickAndImportIcons(() => renderInspector()) },
+    '-',
     { label: 'Sauvegardes…', icon: 'history', run: openBackups },
     { label: 'Exporter la configuration', icon: 'download', run: exportConfig },
     { label: 'Importer une configuration', icon: 'upload', run: () => $('importInput').click() },
@@ -2341,6 +2351,40 @@ function downloadJson(data, name) {
   const a = h('a', { href: URL.createObjectURL(blob), download: name });
   a.click();
   setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+}
+
+// Images collées directement dans les touches (data:…) : à ranger dans la bibliothèque d'icônes.
+function eachFace(config, fn) {
+  for (const p of config.profiles) for (const pg of p.pages) for (const k of Object.values(pg.keys)) {
+    fn(k, 'icon');
+    if (k.alt) fn(k.alt, 'icon');
+  }
+}
+
+function embeddedImages() {
+  const found = new Set();
+  eachFace(state.config, (o, prop) => typeof o[prop] === 'string' && o[prop].startsWith('data:image/') && found.add(o[prop]));
+  return [...found];
+}
+
+const hash8 = (str) => {
+  let x = 2166136261;
+  for (let i = 0; i < str.length; i++) x = Math.imul(x ^ str.charCodeAt(i), 16777619) >>> 0;
+  return x.toString(16).padStart(8, '0');
+};
+
+async function migrateEmbeddedImages() {
+  const map = new Map();
+  for (const url of embeddedImages()) {
+    const m = /^data:(image\/[\w.+-]+);base64,(.+)$/.exec(url);
+    if (!m) continue;
+    const { icon: saved } = await api.uploadIcon({ folder: 'images-des-touches', name: `image-${hash8(url)}`, mime: m[1], data: m[2] });
+    map.set(url, saved.path);
+  }
+  if (!map.size) return toast('Aucune image intégrée à ranger.');
+  commit((c) => eachFace(c, (o, prop) => map.has(o[prop]) && (o[prop] = map.get(o[prop]))));
+  await refreshIcons();
+  toast(`${map.size} image${map.size > 1 ? 's rangées' : ' rangée'} dans le dossier « images-des-touches »`, 'ok', 5000);
 }
 
 function exportConfig() {
