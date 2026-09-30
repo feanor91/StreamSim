@@ -146,7 +146,7 @@ jobs:
           # Sous Windows, la liste utilise des « \ » : on normalise les séparateurs.
           npx --yes @electron/asar list "$ASAR" | tr '\\' '/' > asar.txt
           grep -q "node_modules/node-simconnect/dist/index.js" asar.txt
-          grep -q "public/icons/avia/gear-down.svg" asar.txt
+          grep -q "public/icons/aviation/train-et-commandes-de-vol/gear-down.svg" asar.txt
           echo "node-simconnect et icônes aviation présents dans $ASAR"
           ls dist/*-unpacked/resources/app.asar.unpacked/node_modules/regedit/vbs | head -3
       - name: Vérifier les fichiers de mise à jour automatique

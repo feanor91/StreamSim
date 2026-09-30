@@ -4,6 +4,8 @@
 // Certains avions très détaillés (Fenix, PMDG, FBW…) ont leurs propres systèmes et
 // peuvent ignorer une partie de ces commandes standard.
 
+import { aviationIcon, RAFALE_FACES } from './icons.js';
+
 export const MSFS_EVENTS = [
   { group: 'Train & freins', items: [
     ['GEAR_TOGGLE', 'Train d’atterrissage (basculer)'],
@@ -141,7 +143,7 @@ export const MSFS_UNITS = ['number', 'Bool', 'percent', 'degrees', 'feet', 'knot
 // Noms d'Input Events (MSFS 2024) : lettres, chiffres, « _ », « . », « : ».
 export const isValidInputEvent = (name) => /^[A-Za-z0-9_.:#-]{2,128}$/.test(String(name || ''));
 
-const I = (name) => `/public/icons/avia/${name}.svg`;
+const I = (name) => aviationIcon(name);
 const toggle = (event, simvar) => ({ type: 'toggle', same: true, sync: { simvar }, actions: [{ type: 'msfs', event }] });
 const press = (event) => ({ type: 'msfs', event });
 
@@ -213,15 +215,6 @@ export const MSFS_PRESETS = [
   { label: 'Changer de vue', action: press('VIEW_MODE'), face: { title: 'Vue', icon: I('camera'), color: '#334155' } },
 ];
 
-// Liste des icônes aviation fournies (public/icons/avia/<nom>.svg).
-export const AVIA_ICONS = [
-  'gear-down', 'gear-up', 'parking-brake', 'flaps-down', 'flaps-up', 'spoilers', 'trim-up', 'trim-down',
-  'landing-light', 'taxi-light', 'nav-lights', 'beacon', 'strobe',
-  'ap', 'fd', 'hdg', 'alt', 'vs', 'nav', 'apr', 'athr', 'knob-left', 'knob-right',
-  'battery', 'avionics', 'pitot-heat', 'seatbelt', 'engine', 'fuel',
-  'radio', 'altimeter', 'pause', 'pushback', 'door', 'camera', 'plane',
-];
-
 // Variables numériques utilisables pour l'affichage d'une valeur sur une touche
 // ou la position d'un curseur : [variable, unité, libellé, suffixe, décimales].
 export const MSFS_NUMERIC_SIMVARS = [
@@ -254,7 +247,7 @@ const dialPreset = (label, inc, dec, press, simvar, title, icon) => {
       press: press ? { type: 'msfs', event: press } : null,
       display: { simvar, unit, suffix, decimals, wrap360: unit === 'degrees' },
     },
-    face: { title, icon: `/public/icons/avia/${icon}.svg`, color: '#1e2533' },
+    face: { title, icon: aviationIcon(icon), color: '#1e2533' },
   };
 };
 
@@ -269,7 +262,7 @@ const sliderPreset = (label, event, simvar, title, icon, min = 0, max = 16383) =
     sync: { simvar, unit: 'percent', min: min < 0 ? -100 : 0, max: 100 },
     press: null,
   },
-  face: { title, icon: `/public/icons/avia/${icon}.svg`, color: '#1e2533', span: { w: 1, h: 3 } },
+  face: { title, icon: aviationIcon(icon), color: '#1e2533', span: { w: 1, h: 3 } },
 });
 
 // Boutons rotatifs : tourner = + / −, appuyer = valider (engager le mode, caler…).
@@ -411,7 +404,7 @@ for (const p of FBW_PRESETS) {
 const RAF = '#1c2433';
 const ON_RED = '#b91c1c';
 const ON_AMBER = '#b45309';
-const aviaIcon = (name) => `/public/icons/avia/${name}.svg`;
+const aviaIcon = (name) => aviationIcon(name);
 const rafToggle = (label, input, title, onTitle, iconName, { onIcon, onColor = ON_GREEN } = {}) => ({
   label,
   desc: 'Rafale · état synchronisé',
@@ -510,13 +503,13 @@ const rafKnob = (label, base, title, { push = true, images = null, start = 0, sp
 });
 // Voyant à visuel complet (éteint / allumé) : l'état est celui de la touche, faute de variable
 // de l'avion connue pour le lire.
-const RAF_FACES = '/public/icons/faces';
+const RAF_FACES = RAFALE_FACES;
 const rafFaceToggle = (label, event, name, simvar = null) => ({
   label,
   desc: 'Rafale · code avionique (MobiFlight)',
   action: { type: 'toggle', same: true, ...(simvar ? { sync: { simvar } } : {}), actions: [code(`(>H:${event})`)] },
-  face: { title: name.toUpperCase(), icon: `${RAF_FACES}/rafale-${name}-off.svg`, color: '#161b24', showTitle: false },
-  alt: { title: name.toUpperCase(), icon: `${RAF_FACES}/rafale-${name}-on.svg`, color: '#161b24', showTitle: false },
+  face: { title: name.toUpperCase(), icon: `${RAF_FACES}/${name}/off.svg`, color: '#161b24', showTitle: false },
+  alt: { title: name.toUpperCase(), icon: `${RAF_FACES}/${name}/on.svg`, color: '#161b24', showTitle: false },
 });
 // Simple appui : un événement H: (documentation AzurPoly, « Custom variables and events »).
 const rafEvent = (label, event, title, { color = '#161b24' } = {}) => ({
@@ -554,7 +547,7 @@ const rafSelector = (label, stateVar, labels, title, { images = null, span = nul
 };
 
 const AEC_LABELS = ['STOP', 'IDLE', 'NORM', 'FIX'];
-const aecImages = (side) => AEC_LABELS.map((l) => `${RAF_FACES}/rafale-aec${side}-${l.toLowerCase()}.svg`);
+const aecImages = (side) => AEC_LABELS.map((l) => `${RAF_FACES}/levier-aec-${side === 'g' ? 'gauche' : 'droit'}/${l.toLowerCase()}.svg`);
 
 export const RAFALE_COCKPIT_PRESETS = [
   rafVar('Batterie', 'AZP_RAF_ELECTRICAL_BATTERY_MASTER_SWITCH_STATE', 'Batterie', 'BATTERIE', 'battery'),
@@ -600,7 +593,7 @@ export const RAFALE_COCKPIT_PRESETS = [
   // (0 % OFF, 25 TEST, 37 START L, 50 NORM, 63 START R, 75 STBY ; START L/R reviennent sur NORM).
   rafKnob('Sélecteur de source électrique (5K)', 'AZP_RAF_ELECTRICAL_MAIN_SOURCE_KNOB', '5K', {
     push: false,
-    images: ['off', 'test', 'l', 'norm', 'r', 'stby'].map((p) => `${RAF_FACES}/rafale-5k-${p}.svg`),
+    images: ['off', 'test', 'l', 'norm', 'r', 'stby'].map((p) => `${RAF_FACES}/selecteur-5k/${p}.svg`),
     display: { simvar: lvar('AZP_RAF_ELECTRICAL_MAIN_SOURCE_KNOB_ANIM'), unit: 'percent', values: [0, 25, 37, 50, 63, 75] },
     start: 0,
     span: { w: 2, h: 2 },

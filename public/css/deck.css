@@ -64,6 +64,17 @@ body {
   width: 22px;
   background: var(--grad);
 }
+.deck-dots button.deck-pages-btn {
+  width: auto;
+  height: 28px;
+  padding: 0 14px;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.1);
+  color: var(--text);
+  font-size: 13px;
+  font-weight: 650;
+  font-variant-numeric: tabular-nums;
+}
 .deck-tools {
   display: flex;
   align-items: center;

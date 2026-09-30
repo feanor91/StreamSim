@@ -4,6 +4,7 @@ import { faceFor } from '/shared/layout.js';
 import { MSFS_PRESETS, MSFS_EVENT_LABELS, MSFS_DIAL_PRESETS, MSFS_SLIDER_PRESETS, FBW_PRESETS, RAFALE_PRESETS, RAFALE_COCKPIT_PRESETS } from '/shared/msfs.js';
 import { formatDisplay } from '/shared/controls.js';
 import { SIMHUB_PRESETS } from '/shared/simhub.js';
+import { aviationIcon, isFacePath, isUserIconPath, isBuiltinIconPath } from '/shared/icons.js';
 
 export const isMac = /Mac|iPhone|iPad/.test(navigator.platform);
 
@@ -106,7 +107,7 @@ export const ACTION_TYPES = {
     icon: '🛩️',
     color: '#0ea5e9',
     create: () => ({ type: 'msfs', event: '', value: 0 }),
-    face: { icon: '/public/icons/avia/plane.svg', color: '#0c4a6e' },
+    face: { icon: aviationIcon('plane'), color: '#0c4a6e' },
     summary: (a) => {
       const ops = { set: 'fixer à', toggle: 'basculer', add: 'ajouter' };
       if (a.kind === 'var') return a.var ? `${a.var} : ${ops[a.op ?? 'set']} ${a.op === 'toggle' ? '' : a.value ?? 0}`.trim() : 'Aucune variable choisie';
@@ -373,15 +374,15 @@ export const EMOJIS = (
   '🚀 🌐 🔍 🔗 📊 📈 🗂️ 🗓️ ⏰ ⏱️ ☕ 🍕 💡 🔥 ⭐ ❤️ 👍 👎 👏 🎉 ✅ ❌ ⚠️ ❓ 💯 ➕ ➖ ↩️ ↪️ ⬅️ ➡️ ⬆️ ⬇️ 🏠 🌙 ☀️ 🌈 ⚡ 🐱 🐶 🦊 🤖 👾 😀 😂 😎 🤔 😴'
 ).split(' ');
 
-// Icône fournie par l'application (ex. /public/icons/avia/gear-down.svg).
-export const isIconPath = (icon) => typeof icon === 'string' && /^\/public\/icons\/[\w/-]+\.svg$/.test(icon);
-
-// Visuel complet d'une touche (fond, texte et voyant compris) : affiché en plein cadre, sans couleur ni titre.
-export const isFacePath = (icon) => typeof icon === 'string' && /^\/public\/icons\/faces\/[\w-]+\.svg$/.test(icon);
+// Icône fournie par l'application (ex. /public/icons/aviation/feux/beacon.svg).
+export const isIconPath = isBuiltinIconPath;
+export { isFacePath, isUserIconPath };
+/** Image en couleurs (importée par l'utilisateur, ou intégrée à la touche) : affichée en plein cadre. */
+export const isImageIcon = (icon) => typeof icon === 'string' && (icon.startsWith('data:') || isUserIconPath(icon));
 
 function iconNode(icon, cls = 'kf-icon') {
   if (!icon) return null;
-  if (icon.startsWith('data:')) return h('img', { class: cls, src: icon, alt: '', draggable: 'false' });
+  if (isImageIcon(icon)) return h('img', { class: cls, src: icon, alt: '', draggable: 'false' });
   if (isIconPath(icon)) return h('img', { class: `${cls} kf-svg`, src: icon, alt: '', draggable: 'false' });
   return h('span', { class: cls }, icon);
 }
@@ -475,7 +476,7 @@ export function keyFace(rawKey, state = 0, live = {}) {
   });
   el.style.setProperty('--key-color', key.color || '#1c202a');
   if (hasIcon) {
-    if (key.icon.startsWith('data:')) el.append(h('img', { class: 'kf-icon', src: key.icon, alt: '', draggable: 'false' }));
+    if (isImageIcon(key.icon)) el.append(h('img', { class: 'kf-icon', src: key.icon, alt: '', draggable: 'false' }));
     else if (isIconPath(key.icon)) el.append(h('img', { class: 'kf-icon kf-svg', src: key.icon, alt: '', draggable: 'false' }));
     else el.append(h('span', { class: 'kf-icon' }, key.icon));
   }

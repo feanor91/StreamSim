@@ -124,13 +124,30 @@
 
 <h3 id="pages">Pages, profils, dispositions</h3>
 <ul>
-  <li><b>Pages</b> : onglets au-dessus de la grille. Double-clic pour renommer, glissez un onglet pour changer l'ordre (c'est l'ordre du Deck). Sur le Deck, glissez le doigt à gauche ou à droite pour changer de page. Une touche de type <b>Page</b> saute vers une page précise (comme un dossier).</li>
+  <li><b>Pages</b> : onglets au-dessus de la grille. Double-clic pour renommer, glissez un onglet pour changer l'ordre (c'est l'ordre du Deck). Il n'y a <b>aucune limite</b> au nombre de pages. Quand elles débordent, des flèches ‹ › font défiler les onglets (la molette de la souris aussi), le bouton <b>+</b> reste toujours visible, et le bouton <b>liste</b> (avec le nombre de pages) ouvre la liste complète avec une <b>recherche</b> : cliquez une page pour l'ouvrir. Sur le Deck, glissez le doigt à gauche ou à droite pour changer de page ; au-delà de 12 pages, le point indicateur devient un compteur « 3 / 40 » qui ouvre la même liste. Une touche de type <b>Page</b> saute vers une page précise (comme un dossier) : le bouton « Parcourir les N pages… » de son réglage la choisit dans la liste avec recherche.</li>
   <li><b>Profils</b> : menu en haut. Le profil sélectionné est celui qu'affiche le Deck. Utile pour avoir un jeu de pages par simulateur.</li>
   <li><b>Dispositions</b> : Mini (2×3), Standard (3×5), Plus (4×4), XL (4×8). En portrait, la grille est tournée pour garder des touches presque carrées.</li>
   <li><b>Touches fusionnées</b> : inspecteur → Apparence → Taille : une touche peut occuper 2×1, 1×2, 2×2, 4×2… (elle s'étend vers la droite et vers le bas, les cases doivent être libres). Pratique pour un grand sélecteur ou un curseur vertical.</li>
   <li><b>Sauvegardes</b> : bouton ↺ en haut à droite. Automatiques (30 gardées), manuelles nommées, restauration annulable, export/import d'un fichier <code>.json</code> pour changer de PC.</li>
   <li>Raccourcis de l'interface : flèches pour se déplacer, <span class="kbd">Suppr</span>, <span class="kbd">Ctrl</span>+<span class="kbd">C</span> / <span class="kbd">V</span> / <span class="kbd">D</span>, <span class="kbd">Ctrl</span>+<span class="kbd">Z</span> / <span class="kbd">Y</span> (annuler / rétablir), <span class="kbd">Échap</span>.</li>
 </ul>
+
+<h3 id="icones">Icônes et images</h3>
+<p>Dans l'inspecteur (section « Apparence »), trois onglets :</p>
+<ul>
+  <li><b>Emoji</b> : une liste, ou un caractère tapé au clavier.</li>
+  <li><b>Aviation</b> : 36 pictogrammes fournis avec l'application, classés par groupes (train et commandes de vol, feux, pilote automatique, systèmes, radios et divers). Ils sont blancs et prennent la couleur de la touche.</li>
+  <li><b>Image</b> : vos propres images (PNG, JPG, WebP, GIF, SVG) en couleurs, rangées dans la <b>bibliothèque d'icônes</b>.</li>
+</ul>
+<h4>La bibliothèque d'icônes</h4>
+<p>C'est un dossier sur le PC : <code>icons/</code> dans le dossier des données de StreamSim (<code>%APPDATA%\StreamSim\data\icons</code> sous Windows), avec un sous-dossier par thème, par exemple <code>icons/mon-avion/train.png</code>. Les Decks les affichent en les demandant au serveur (<code>/user-icons/…</code>). Une même image sert à autant de touches que vous voulez.</p>
+<ul>
+  <li><b>Ajouter</b> : onglet Image → déposez une image (elle est rangée dans le dossier « divers »), ou ouvrez la bibliothèque (menu du profil → <i>Bibliothèque d'icônes</i>) pour choisir le dossier et déposer plusieurs images à la fois.</li>
+  <li><b>Choisir</b> : onglet Image, ou la bibliothèque (clic sur une icône). <b>Supprimer</b> : le × d'une icône dans la bibliothèque.</li>
+  <li><b>Exporter / importer</b> : boutons de la bibliothèque, ou entrées du menu du profil. L'export produit un fichier <code>streamsim-icones-….json</code> contenant toutes les icônes ; l'import l'ajoute à la bibliothèque (les icônes identiques sont ignorées, celles qui ont le même nom mais un autre contenu ne sont remplacées que si vous le confirmez). Pour changer de PC : exportez la <b>configuration</b> et les <b>icônes</b>, puis importez les deux.</li>
+  <li><b>Ranger les images intégrées</b> : les images collées directement dans les touches (versions antérieures) alourdissent la configuration. Le bouton « Ranger les images intégrées aux touches » de la bibliothèque les déplace dans le dossier <code>images-des-touches</code>.</li>
+</ul>
+<p>Les icônes fournies avec l'application (dossiers <code>public/icons/aviation/…</code> et <code>public/icons/touches-completes/…</code>) ne se modifient pas : elles sont mises à jour avec l'application.</p>
 
 <h2 id="actions">3. Les types d'action</h2>
 <div class="tablewrap"><table>

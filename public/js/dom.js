@@ -25,6 +25,7 @@ const ICONS = {
   play: '<path d="M7 4v16l13-8z"/>',
   copy: '<rect x="8" y="8" width="12" height="12" rx="2"/><path d="M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2"/>',
   plus: '<path d="M12 5v14M5 12h14"/>',
+  search: '<circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/>',
   pencil: '<path d="M4 20h4L19 9l-4-4L4 16z"/><path d="m13.5 6.5 4 4"/>',
   upload: '<path d="M12 16V4M7 9l5-5 5 5"/><path d="M4 16v3a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-3"/>',
   download: '<path d="M12 4v12M7 11l5 5 5-5"/><path d="M4 16v3a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-3"/>',
@@ -175,4 +176,50 @@ export function openMenu(anchor, items) {
     document.addEventListener('keydown', onKey, true);
   });
   return close;
+}
+
+/**
+ * Liste de toutes les pages d'un profil, avec recherche : permet d'atteindre n'importe quelle page,
+ * même quand il y en a des dizaines ou des centaines. Retourne l'identifiant choisi (ou null).
+ */
+export function pagePicker({ pages, currentId = null, title = 'Toutes les pages', focusSearch = true }) {
+  return openModal((modal, close) => {
+    modal.classList.add('page-picker');
+    const search = h('input', { type: 'search', placeholder: `Rechercher parmi ${pages.length} pages…`, autocomplete: 'off', 'aria-label': 'Rechercher une page' });
+    const list = h('div', { class: 'page-picker-list' });
+    let shown = [];
+    const render = () => {
+      const q = search.value.trim().toLowerCase();
+      shown = pages.map((p, i) => ({ p, i })).filter(({ p, i }) => !q || p.name.toLowerCase().includes(q) || String(i + 1) === q);
+      list.replaceChildren(
+        ...(shown.length
+          ? shown.map(({ p, i }) => {
+              const n = Object.keys(p.keys ?? {}).length;
+              return h(
+                'button',
+                { class: `page-picker-row${p.id === currentId ? ' on' : ''}`, onclick: () => close(p.id) },
+                h('span', { class: 'num' }, String(i + 1)),
+                h('span', { class: 'name' }, p.name),
+                h('span', { class: 'count' }, n ? `${n} touche${n > 1 ? 's' : ''}` : 'vide'),
+              );
+            })
+          : [h('div', { class: 'page-picker-empty' }, 'Aucune page ne correspond.')]),
+      );
+    };
+    search.addEventListener('input', render);
+    search.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' && shown.length) close(shown[0].p.id);
+    });
+    modal.append(
+      h('div', { class: 'explorer-head' }, h('h3', {}, title), h('button', { class: 'btn small ghost icon-only', title: 'Fermer', onclick: () => close(null) }, icon('x'))),
+      search,
+      list,
+      h('div', { class: 'page-picker-foot' }, `${pages.length} page${pages.length > 1 ? 's' : ''} · Entrée ouvre la première`),
+    );
+    render();
+    setTimeout(() => {
+      list.querySelector('.on')?.scrollIntoView?.({ block: 'center' });
+      if (!focusSearch) search.blur();
+    }, 0);
+  });
 }

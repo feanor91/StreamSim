@@ -50,3 +50,22 @@ test('documentation : servie par le serveur à /docs, avec les sections principa
     await fs.rm(dataDir, { recursive: true, force: true });
   }
 });
+
+test('pages : aucune limite de nombre de pages, enregistrées et relues intégralement', async () => {
+  const dataDir = await fs.mkdtemp(path.join(os.tmpdir(), 'deck-pages-'));
+  const deck = await startDeckServer({ port: 0, host: '127.0.0.1', dataDir, dryRun: true, discovery: false, msfs: false, simhub: false, log: quiet });
+  const base = `http://127.0.0.1:${deck.port}`;
+  try {
+    const { config } = await (await fetch(`${base}/api/config`)).json();
+    const profile = config.profiles[0];
+    profile.pages = Array.from({ length: 500 }, (_, i) => ({ id: `p${i}`, name: `Page ${i + 1}`, keys: { 0: { title: `T${i}`, icon: '⭐', color: '#334155', action: { type: 'page', pageId: i ? `p${i - 1}` : 'p499' } } } }));
+    const put = await fetch(`${base}/api/config`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ config }) });
+    assert.equal(put.status, 200);
+    const back = await (await fetch(`${base}/api/config`)).json();
+    assert.equal(back.config.profiles[0].pages.length, 500);
+    assert.equal(back.config.profiles[0].pages[499].name, 'Page 500');
+  } finally {
+    await deck.close();
+    await fs.rm(dataDir, { recursive: true, force: true });
+  }
+});
