@@ -26,6 +26,13 @@ le PC : raccourci clavier, texte, commande multimédia, lancement d'application�
  └─────────────────────────────┘ (découverte)└─────────────────┘
 ```
 
+> **Documentation complète** : elle est servie par le serveur à l'adresse `/docs`
+> (bouton **?** en haut de l'écran de configuration, ou `http://adresse-du-pc:3210/docs`
+> depuis n'importe quel appareil du réseau). Elle explique comment programmer les touches :
+> clavier, texte, bascules, boutons rotatifs, MSFS (SimConnect, variables, Input Events,
+> code avionique WASM), SimHub, et le Mode jeu pour Assetto Corsa ou Le Mans Ultimate.
+> Source : `public/docs.html`.
+
 ## Installation
 
 Les installateurs sont produits automatiquement par GitHub Actions à chaque

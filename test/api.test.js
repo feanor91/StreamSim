@@ -27,3 +27,26 @@ test('interface : les requêtes sans paramètre (mise à jour) sont acceptées p
     await fs.rm(dataDir, { recursive: true, force: true });
   }
 });
+
+test('documentation : servie par le serveur à /docs, avec les sections principales', async () => {
+  const dataDir = await fs.mkdtemp(path.join(os.tmpdir(), 'deck-docs-'));
+  const deck = await startDeckServer({ port: 0, host: '127.0.0.1', dataDir, dryRun: true, discovery: false, msfs: false, simhub: false, log: quiet });
+  try {
+    const res = await fetch(`http://127.0.0.1:${deck.port}/docs`);
+    assert.equal(res.status, 200);
+    assert.match(res.headers.get('content-type'), /text\/html/);
+    const html = await res.text();
+    for (const id of ['principe', 'actions', 'jeux', 'mode-jeu', 'msfs', 'code-avionique', 'simhub', 'rafale', 'depannage']) {
+      assert.ok(html.includes(`id="${id}"`), `section ${id}`);
+    }
+    // Tous les liens internes du sommaire pointent vers une section existante.
+    for (const [, target] of html.matchAll(/href="#([\w-]+)"/g)) assert.ok(html.includes(`id="${target}"`), `lien #${target}`);
+    assert.match(html, /Mode jeu/);
+    assert.match(html, /MobiFlight/);
+    const index = await (await fetch(`http://127.0.0.1:${deck.port}/`)).text();
+    assert.match(index, /href="\/docs"/);
+  } finally {
+    await deck.close();
+    await fs.rm(dataDir, { recursive: true, force: true });
+  }
+});

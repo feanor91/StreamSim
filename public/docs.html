@@ -1,0 +1,480 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Documentation StreamSim</title>
+<link rel="icon" href="/public/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="/public/css/base.css">
+<style>
+  html { scroll-behavior: smooth; scroll-padding-top: 20px; }
+  body { height: auto; }
+  .doc { display: grid; grid-template-columns: 280px minmax(0, 1fr); gap: 0; min-height: 100vh; }
+  .doc-nav {
+    position: sticky; top: 0; align-self: start; height: 100vh; overflow-y: auto;
+    padding: 22px 16px 32px 22px; background: var(--panel); border-right: 1px solid var(--line);
+  }
+  .doc-nav .brand { display: flex; align-items: baseline; gap: 8px; font-size: 18px; font-weight: 750; margin-bottom: 4px; }
+  .doc-nav .brand small { color: var(--faint); font-weight: 500; font-size: 12px; }
+  .doc-nav .sub { color: var(--muted); font-size: 12.5px; margin-bottom: 16px; }
+  .doc-nav a { display: block; padding: 5px 10px; border-radius: 8px; color: var(--muted); text-decoration: none; font-size: 13px; }
+  .doc-nav a:hover { background: var(--panel-3); color: var(--text); }
+  .doc-nav a.on { background: var(--accent-soft); color: var(--text); }
+  .doc-nav a.h3 { padding-left: 22px; font-size: 12.5px; }
+  .doc-nav .grp { margin: 14px 10px 4px; font-size: 11px; font-weight: 650; letter-spacing: 0.06em; text-transform: uppercase; color: var(--faint); }
+  .doc-nav .back { display: inline-flex; margin-bottom: 14px; padding: 6px 10px; border: 1px solid var(--line-2); border-radius: 8px; background: var(--panel-2); color: var(--text); }
+  main { padding: 34px clamp(18px, 5vw, 64px) 90px; max-width: 980px; }
+  main h1 { font-size: 30px; margin: 0 0 8px; letter-spacing: -0.02em; }
+  main .lead { color: var(--muted); font-size: 15.5px; margin: 0 0 26px; max-width: 70ch; }
+  main h2 { font-size: 22px; margin: 46px 0 12px; padding-top: 18px; border-top: 1px solid var(--line); letter-spacing: -0.01em; }
+  main h3 { font-size: 16.5px; margin: 28px 0 8px; }
+  main h4 { font-size: 14px; margin: 20px 0 6px; color: var(--accent-2); }
+  main p, main li { line-height: 1.65; max-width: 78ch; }
+  main ul, main ol { padding-left: 22px; }
+  main li { margin: 4px 0; }
+  main a { color: var(--accent-2); }
+  code { font-family: var(--mono); font-size: 12.5px; padding: 1px 6px; border-radius: 6px; background: var(--panel-3); color: #d6dcff; }
+  pre { margin: 12px 0; padding: 14px 16px; border-radius: 12px; background: var(--bg-2); border: 1px solid var(--line-2); overflow-x: auto; line-height: 1.55; }
+  pre code { padding: 0; background: none; font-size: 12.5px; color: #dfe4ff; }
+  table { border-collapse: collapse; width: 100%; margin: 12px 0; font-size: 13.5px; }
+  th, td { text-align: left; vertical-align: top; padding: 9px 12px; border: 1px solid var(--line); }
+  th { background: var(--panel-2); font-weight: 650; }
+  td { background: var(--panel); }
+  .tablewrap { overflow-x: auto; }
+  .note, .warn, .tip { margin: 14px 0; padding: 12px 16px; border-radius: 12px; border: 1px solid var(--line-2); background: var(--panel-2); line-height: 1.6; max-width: 78ch; }
+  .note { border-left: 3px solid var(--accent-2); }
+  .tip { border-left: 3px solid var(--ok); }
+  .warn { border-left: 3px solid var(--warn); }
+  .note b:first-child, .tip b:first-child, .warn b:first-child { display: block; margin-bottom: 2px; }
+  .steps { counter-reset: s; list-style: none; padding-left: 0; }
+  .steps > li { counter-increment: s; position: relative; padding-left: 40px; margin: 12px 0; }
+  .steps > li::before {
+    content: counter(s); position: absolute; left: 0; top: 0; width: 28px; height: 28px; border-radius: 50%;
+    display: grid; place-items: center; background: var(--accent-soft); color: var(--accent); font-weight: 700; font-size: 13px;
+  }
+  .kbd { display: inline-block; padding: 1px 7px; border: 1px solid var(--line-2); border-bottom-width: 2px; border-radius: 6px; background: var(--panel-2); font: 600 12px/1.6 var(--font); }
+  .pills { display: flex; flex-wrap: wrap; gap: 8px; margin: 14px 0; }
+  .pills a { padding: 6px 12px; border-radius: 999px; background: var(--panel-2); border: 1px solid var(--line-2); text-decoration: none; color: var(--text); font-size: 13px; }
+  .pills a:hover { border-color: var(--accent); }
+  @media (max-width: 860px) {
+    .doc { grid-template-columns: 1fr; }
+    .doc-nav { position: static; height: auto; border-right: 0; border-bottom: 1px solid var(--line); }
+    .doc-nav .toc { display: none; }
+    .doc-nav.open .toc { display: block; }
+    .doc-nav .toggle { display: inline-flex; }
+  }
+  .doc-nav .toggle { display: none; margin-left: 8px; padding: 6px 10px; border: 1px solid var(--line-2); border-radius: 8px; background: var(--panel-2); color: var(--text); cursor: pointer; }
+  @media print { .doc-nav { display: none; } .doc { display: block; } }
+</style>
+</head>
+<body>
+<div class="doc">
+<nav class="doc-nav" id="nav">
+  <a class="back" href="/">← Retour à la configuration</a><button class="toggle" id="navToggle" type="button">Sommaire</button>
+  <div class="brand">StreamSim <small id="ver"></small></div>
+  <div class="sub">Documentation</div>
+  <div class="toc" id="toc"></div>
+</nav>
+
+<main id="content">
+<h1>Documentation StreamSim</h1>
+<p class="lead">Comment fonctionne StreamSim, et comment programmer ses touches, pour le bureau comme pour les simulateurs : Microsoft Flight Simulator (SimConnect, variables, code avionique WASM), SimHub, et les jeux comme Assetto Corsa ou Le Mans Ultimate.</p>
+
+<div class="pills">
+  <a href="#principe">Comment ça marche</a>
+  <a href="#premiere-touche">Créer une touche</a>
+  <a href="#actions">Types d'action</a>
+  <a href="#jeux">Assetto Corsa, Le Mans Ultimate</a>
+  <a href="#msfs">Microsoft Flight Simulator</a>
+  <a href="#code-avionique">Code avionique (WASM)</a>
+  <a href="#simhub">SimHub</a>
+  <a href="#rafale">Rafale</a>
+  <a href="#depannage">Dépannage</a>
+</div>
+
+<h2 id="principe">1. Comment ça marche</h2>
+<p>StreamSim est composé d'un <b>serveur</b> qui tourne sur le PC, d'une <b>interface de configuration</b> (la fenêtre de l'application PC, ou un navigateur sur <code>http://adresse-du-pc:3210/</code>) et d'un <b>Deck</b> : l'écran de touches affiché sur le téléphone ou la tablette (application Android, ou navigateur sur <code>/deck</code>).</p>
+<ul>
+  <li>Vous <b>configurez</b> les touches sur le PC : chaque touche a une <b>action</b> (ce qu'elle fait) et une <b>apparence</b> (titre, icône, couleur, taille).</li>
+  <li>Quand vous appuyez sur le Deck, il envoie l'ordre <b>au serveur</b> sur le Wi-Fi, et c'est le serveur qui agit sur le PC : il envoie des touches au clavier, ouvre un programme, ou parle au simulateur.</li>
+  <li>Le serveur renvoie aussi au Deck l'<b>état</b> des touches (bascules, valeurs affichées) : une touche peut s'allumer quand le train est sorti, ou afficher la vitesse en direct.</li>
+</ul>
+<div class="tablewrap"><table>
+  <tr><th>Pour agir sur…</th><th>StreamSim utilise…</th></tr>
+  <tr><td>Windows, un programme, un jeu</td><td>Touches clavier envoyées par le système (<code>SendInput</code>), texte, multimédia, lancement de programmes</td></tr>
+  <tr><td>Microsoft Flight Simulator</td><td><b>SimConnect</b> (interface officielle du simulateur) : événements, variables, Input Events, et <b>code avionique</b> via le module MobiFlight WASM</td></tr>
+  <tr><td>Jeux de course (Assetto Corsa, Le Mans Ultimate…)</td><td>Touches clavier en <b>« Mode jeu »</b>, et données en direct grâce à <b>SimHub</b></td></tr>
+</table></div>
+
+<h2 id="premiere-touche">2. Créer et régler une touche</h2>
+<p>L'interface de configuration comporte trois zones :</p>
+<ul>
+  <li><b>Bibliothèque</b> (à gauche) : des actions et des touches toutes faites, classées par groupes (repliés par défaut, cliquez sur un titre pour l'ouvrir). Une recherche déplie les groupes qui contiennent un résultat.</li>
+  <li><b>Grille</b> (au centre) : les touches de la page. Glissez une touche sur une autre pour les échanger, ou sur l'onglet d'une page pour l'y déplacer. Clic droit : tester, copier, dupliquer, déplacer, effacer.</li>
+  <li><b>Inspecteur</b> (à droite) : les réglages de la touche sélectionnée.</li>
+</ul>
+<ol class="steps">
+  <li><b>Choisissez une case</b> de la grille en cliquant dessus.</li>
+  <li><b>Appliquez une action</b> : cliquez sur un élément de la bibliothèque (il s'applique à la case sélectionnée), ou glissez-le sur la case. Les éléments toutes faites (« Train d'atterrissage », « Batterie »…) arrivent avec leur action <i>et</i> leur apparence déjà réglées.</li>
+  <li><b>Réglez l'action</b> dans l'inspecteur (section « Action »). Le type d'action se change à tout moment sans perdre le titre ni l'icône.</li>
+  <li><b>Personnalisez l'apparence</b> : titre, icône (emoji, icône <i>Aviation</i> ou image), couleur, et taille (section « Apparence »).</li>
+  <li><b>Testez</b> : clic droit sur la touche → « Tester », ou appuyez sur le Deck. L'enregistrement est automatique.</li>
+</ol>
+<div class="tip"><b>Astuce</b>Pour créer une touche proche d'une touche existante, dupliquez-la (<span class="kbd">Ctrl</span>+<span class="kbd">D</span>) puis modifiez-la.</div>
+
+<h3 id="pages">Pages, profils, dispositions</h3>
+<ul>
+  <li><b>Pages</b> : onglets au-dessus de la grille. Double-clic pour renommer, glissez un onglet pour changer l'ordre (c'est l'ordre du Deck). Sur le Deck, glissez le doigt à gauche ou à droite pour changer de page. Une touche de type <b>Page</b> saute vers une page précise (comme un dossier).</li>
+  <li><b>Profils</b> : menu en haut. Le profil sélectionné est celui qu'affiche le Deck. Utile pour avoir un jeu de pages par simulateur.</li>
+  <li><b>Dispositions</b> : Mini (2×3), Standard (3×5), Plus (4×4), XL (4×8). En portrait, la grille est tournée pour garder des touches presque carrées.</li>
+  <li><b>Touches fusionnées</b> : inspecteur → Apparence → Taille : une touche peut occuper 2×1, 1×2, 2×2, 4×2… (elle s'étend vers la droite et vers le bas, les cases doivent être libres). Pratique pour un grand sélecteur ou un curseur vertical.</li>
+  <li><b>Sauvegardes</b> : bouton ↺ en haut à droite. Automatiques (30 gardées), manuelles nommées, restauration annulable, export/import d'un fichier <code>.json</code> pour changer de PC.</li>
+  <li>Raccourcis de l'interface : flèches pour se déplacer, <span class="kbd">Suppr</span>, <span class="kbd">Ctrl</span>+<span class="kbd">C</span> / <span class="kbd">V</span> / <span class="kbd">D</span>, <span class="kbd">Ctrl</span>+<span class="kbd">Z</span> / <span class="kbd">Y</span> (annuler / rétablir), <span class="kbd">Échap</span>.</li>
+</ul>
+
+<h2 id="actions">3. Les types d'action</h2>
+<div class="tablewrap"><table>
+  <tr><th>Type</th><th>À quoi il sert</th></tr>
+  <tr><td><a href="#a-raccourci">Raccourci clavier</a></td><td>Envoie une touche ou une combinaison (<code>Ctrl+Maj+M</code>)</td></tr>
+  <tr><td><a href="#a-texte">Texte</a></td><td>Tape un texte (accents, emojis, Entrée en option)</td></tr>
+  <tr><td>Multimédia</td><td>Lecture/pause, piste suivante/précédente, stop, volume, muet</td></tr>
+  <tr><td>Application</td><td>Lance un programme, un document ou un raccourci, avec des arguments</td></tr>
+  <tr><td>Site web</td><td>Ouvre une adresse dans le navigateur par défaut</td></tr>
+  <tr><td>Commande système</td><td>Exécute une commande shell (avec vos droits d'utilisateur)</td></tr>
+  <tr><td>Page</td><td>Change la page du Deck</td></tr>
+  <tr><td><a href="#a-multi">Multi-actions</a></td><td>Enchaîne plusieurs actions, avec des pauses</td></tr>
+  <tr><td><a href="#a-bascule">Bascule</a></td><td>Deux états (allumé/éteint), avec un aspect par état</td></tr>
+  <tr><td><a href="#a-rotatif">Bouton rotatif</a></td><td>Glisser = « + » / « − », appui = valider, avec affichage d'une valeur</td></tr>
+  <tr><td><a href="#a-curseur">Curseur</a></td><td>Position réglable (gaz, volets…) ou crans</td></tr>
+  <tr><td><a href="#a-afficheur">Afficheur</a></td><td>Valeur en direct d'un simulateur</td></tr>
+  <tr><td><a href="#msfs">Commande MSFS</a></td><td>Agit sur Microsoft Flight Simulator</td></tr>
+  <tr><td><a href="#simhub">Commande SimHub</a></td><td>Déclenche un « Control » SimHub</td></tr>
+</table></div>
+
+<h3 id="a-raccourci">Raccourci clavier</h3>
+<p>Deux façons de définir la touche :</p>
+<ul>
+  <li><b>Enregistrement</b> : cliquez dans la zone « Raccourci », puis appuyez sur la combinaison voulue au clavier (<span class="kbd">Échap</span> annule). L'enregistrement retient la <i>position physique</i> de la touche : un « A » d'un clavier AZERTY est bien enregistré comme « A ».</li>
+  <li><b>Manuellement</b> : boutons de modificateurs (Ctrl, Maj, Alt, Win) et liste des touches. Utile pour les combinaisons que le système capte avant le navigateur (<code>Ctrl+W</code>, <code>Win+…</code>).</li>
+</ul>
+<p><b>Répéter</b> envoie le raccourci plusieurs fois de suite (jusqu'à 50, 40 ms d'écart). Pour les jeux qui ignorent la touche, voir <a href="#jeux">le Mode jeu</a>.</p>
+
+<h3 id="a-texte">Texte</h3>
+<p>Tape le texte tel quel, en Unicode (accents, emojis). « Valider par Entrée » ajoute un retour à la ligne à la fin.</p>
+
+<h4>Logiciel cible (raccourci et texte)</h4>
+<p>Par défaut, les touches partent vers la <b>fenêtre active</b>. La section « Logiciel cible » permet de viser une fenêtre précise, que StreamSim met au premier plan avant d'envoyer les touches :</p>
+<ul>
+  <li><b>Application</b> : nom du processus (<code>obs64</code>, <code>chrome</code>, <code>Discord</code>…) ;</li>
+  <li><b>Titre</b> : texte contenu dans le titre de la fenêtre.</li>
+</ul>
+<p>Le bouton ⟳ liste les fenêtres ouvertes. Selon le système : Windows utilise <code>SendInput</code> sans prérequis ; macOS utilise AppleScript (autorisez le terminal dans <i>Réglages › Confidentialité › Accessibilité</i>) ; Linux utilise <code>xdotool</code> (+ <code>wmctrl</code>).</p>
+
+<h3 id="a-multi">Multi-actions</h3>
+<p>Une suite d'étapes exécutées l'une après l'autre : raccourci, texte, multimédia, application, site web, commande, commande MSFS, commande SimHub et <b>Pause</b> (durée en millisecondes). Exemple : « démarrage moteur » = commande MSFS, pause 500 ms, autre commande MSFS.</p>
+
+<h3 id="a-bascule">Bascule (deux états)</h3>
+<p>Une bascule a deux états, chacun avec son titre, son icône, sa couleur. À chaque appui elle envoie l'action de son état puis change d'état ; deux pastilles indiquent l'état courant. Vous pouvez donner deux actions différentes, ou la <b>même action</b> pour les deux états (touche « G » du train, par exemple).</p>
+<ul>
+  <li>L'état est gardé par le PC : téléphone, tablette et écran de configuration affichent le même.</li>
+  <li><b>Synchronisation avec le simulateur</b> : activez l'option d'état lu dans le simulateur et indiquez la variable (MSFS : SimVar, variable <code>L:</code> ou Input Event ; SimHub : propriété). La touche suit alors l'état <i>réel</i>, même si vous agissez à la souris dans le cockpit. « État 2 si la valeur vaut… » permet de n'allumer la touche que pour une valeur précise (auto-freinage sur MED, par exemple) ; une propriété texte peut être comparée à un texte (rapport « R »).</li>
+  <li>Sans synchronisation, si l'état se désynchronise, un <b>appui long</b> sur la touche change l'état <i>sans rien envoyer</i> (le bouton « Changer d'état » de l'inspecteur fait pareil).</li>
+</ul>
+
+<h3 id="a-rotatif">Bouton rotatif</h3>
+<p>Un bouton rotatif se manipule en glissant le doigt (ou la molette de la souris sur PC) :</p>
+<ul>
+  <li>vers la droite ou le haut = <b>Tourner +</b> ; vers la gauche ou le bas = <b>Tourner −</b>. Chaque cran envoie l'action correspondante. La <b>sensibilité</b> (fine, normale, rapide) règle la distance de glissement par cran ;</li>
+  <li>un <b>appui</b> sans glisser déclenche l'action « Appui » (valider une valeur, engager un mode) ; l'<b>appui long</b> déclenche « Appui long » si elle est définie ;</li>
+  <li>« Afficher une valeur du simulateur » montre en direct une valeur (cap « 275° », altitude « 12 000 ft ») avec suffixe, décimales, zéros devant, signe, etc.</li>
+</ul>
+<p>Chacune des trois actions (+, −, appui) est une action ordinaire : raccourci clavier, commande MSFS (événement, variable, Input Event, <i>code</i>), commande SimHub…</p>
+<div class="note"><b>Sélecteurs à positions</b>Pour un sélecteur à positions nommées (STOP/IDLE/NORM/FIX), un bouton rotatif dont la valeur affichée est lue dans une variable <code>L:</code> convient bien. Les touches du groupe <i>Rafale : cockpit</i> montrent des exemples : le libellé ou le visuel affiché suit la valeur de la variable.</div>
+
+<h3 id="a-curseur">Curseur</h3>
+<ul>
+  <li><b>Vertical</b> si la touche est plus haute que large (fusionnez-la en 1×3 pour un vrai levier), <b>horizontal</b> sinon.</li>
+  <li>Mode <b>Position (MSFS)</b> : la position est envoyée en continu au simulateur (par exemple <code>THROTTLE_SET</code> de 0 à 16383) et le curseur suit le levier si vous le bougez dans le cockpit.</li>
+  <li>Mode <b>Pas à pas</b> : glisser d'un bout à l'autre envoie un nombre réglable de « + » ou de « − » (raccourcis clavier, commandes…), pour n'importe quel logiciel.</li>
+  <li>Un appui sans glisser déclenche l'action « Appui » si elle existe, sinon le curseur saute à l'endroit touché.</li>
+</ul>
+
+<h3 id="a-afficheur">Afficheur</h3>
+<p>Une touche qui affiche en grand une valeur en direct (vitesse, rapport engagé, temps au tour, altitude…), avec un titre en dessous. La valeur vient de <b>MSFS</b> (SimVar, variable <code>L:</code>, Input Event) ou de <b>SimHub</b> (propriété). Options : suffixe (<code>km/h</code>), décimales, facteur (échelle), zéros devant, signe, format « temps au tour » (<code>1:23.456</code>). Un appui peut aussi déclencher une action.</p>
+
+<h2 id="jeux">4. Assetto Corsa, Le Mans Ultimate et les jeux de course</h2>
+<p>Pour un jeu, StreamSim intervient de deux manières : il <b>envoie des touches</b> au jeu (changer de vue, appeler les stands, boîtier de commandes…), et il <b>affiche les données</b> du jeu grâce à <a href="#simhub">SimHub</a>.</p>
+
+<h3 id="mode-jeu">Envoyer des touches à un jeu : le « Mode jeu »</h3>
+<p>Beaucoup de jeux ne voient pas les touches envoyées par un logiciel : ils lisent le clavier par son <b>code matériel</b> (scancode), image par image, et ignorent une touche qui n'a pas de code matériel ou qui est relâchée aussitôt. C'est exactement ce que corrige le <b>Mode jeu</b> : la touche est envoyée comme le ferait un vrai clavier (code matériel) et <b>maintenue</b> quelques millisecondes.</p>
+<ol class="steps">
+  <li>Créez une touche de type <b>Raccourci clavier</b> et enregistrez la touche que le jeu attend (celle de ses réglages de commandes).</li>
+  <li>Cochez <b>« Mode jeu (touche envoyée comme un vrai clavier) »</b>.</li>
+  <li>Réglez au besoin la <b>Durée d'appui</b> (60 ms par défaut, de 10 à 500). Augmentez-la si le jeu manque des appuis ; certaines actions « maintenues » du jeu en demandent davantage.</li>
+  <li>Mettez le jeu au premier plan et testez depuis le Deck.</li>
+</ol>
+<h4>Ne pas cocher touche par touche</h4>
+<p>Menu du profil → <b>« Mode jeu automatique sur les nouvelles touches »</b> : une fois coché, tout raccourci clavier ajouté ensuite a déjà le Mode jeu. Il n'est <i>pas</i> activé par défaut car les autres usages (MSFS, bureautique) n'en ont pas besoin. Les touches déjà créées ne changent pas, et vous pouvez toujours décocher le Mode jeu sur une touche précise. Astuce : activez ce réglage avant de construire le profil du jeu, puis désactivez-le.</p>
+
+<h3>Configurer les commandes dans le jeu</h3>
+<ul>
+  <li>Dans les réglages de commandes du jeu (Assetto Corsa, Le Mans Ultimate), affectez à chaque fonction une touche libre, de préférence peu utilisée (touches <code>F13</code> à <code>F24</code>, pavé numérique, combinaisons avec modificateurs).</li>
+  <li>Sur StreamSim, créez la touche avec <b>la même touche</b>. Si le jeu demande d'« appuyer sur une touche » pour l'affecter, appuyez sur la touche du Deck : c'est ce qui vérifie que le Mode jeu fonctionne.</li>
+  <li>Pour une action qui demande un <b>maintien</b> (bouton de démarrage, appel de phares…), allongez la durée d'appui.</li>
+  <li>Pour enchaîner des touches (procédure de démarrage, réglages de stand), utilisez une <b>multi-action</b> avec des pauses.</li>
+</ul>
+
+<h3>Afficher les données du jeu</h3>
+<p>Avec SimHub (voir <a href="#simhub">la section SimHub</a>), le groupe <i>SimHub</i> de la bibliothèque propose des afficheurs prêts à l'emploi : vitesse, rapport, régime, carburant, position, tours, tour en cours, dernier et meilleur tour, niveaux d'antipatinage et d'ABS, répartition de freinage… Une <b>bascule synchronisée</b> peut suivre une propriété SimHub (limiteur de stand, contact, DRS) tout en envoyant la touche du jeu.</p>
+
+<h3>Si ça ne marche toujours pas</h3>
+<div class="warn"><b>Vérifications, dans l'ordre</b>
+<ol>
+  <li>Le jeu est bien <b>au premier plan</b> au moment de l'appui, et en <b>fenêtré sans bordure</b> plutôt qu'en plein écran exclusif.</li>
+  <li>Le jeu tourne <b>en administrateur</b> ? Windows interdit alors à une application ordinaire de lui envoyer des touches : lancez aussi StreamSim en administrateur (clic droit → Exécuter en tant qu'administrateur).</li>
+  <li>Le <b>Mode jeu est coché</b> sur cette touche, et la touche correspond à celle du jeu (testez-la dans les réglages de commandes du jeu).</li>
+  <li>Augmentez la <b>durée d'appui</b> (essayez 100 puis 200 ms).</li>
+  <li>Dernier cas : le jeu ou son <b>anti-triche</b> (EasyAntiCheat, par exemple) bloque toute entrée envoyée par un logiciel. StreamSim n'a aucun moyen de le contourner, et n'en cherche pas. Utilisez alors les fonctions de boutons ou de macros du jeu, ou un périphérique matériel.</li>
+</ol></div>
+
+<h2 id="msfs">5. Microsoft Flight Simulator (SimConnect)</h2>
+<p>StreamSim pilote MSFS 2024 (et 2020) directement par <b>SimConnect</b>, l'interface officielle du simulateur. Quand StreamSim tourne sur le même PC que MSFS, <b>la liaison s'établit toute seule</b> dès que le simulateur est lancé (indicateur « MSFS » en vert en haut de l'écran de configuration). Aucun fichier à configurer, les commandes partent même si la fenêtre du simulateur n'a pas le focus, et les touches à bascule affichent l'<b>état réel</b> de l'avion.</p>
+<p>L'action <b>Commande MSFS</b> propose quatre modes (barre en haut de l'action) :</p>
+<div class="tablewrap"><table>
+  <tr><th>Mode</th><th>Ce que ça fait</th><th>Exemple</th></tr>
+  <tr><td><b>Commande</b></td><td>Envoie un <i>événement</i> SimConnect, standard ou propre à l'avion, avec une valeur facultative</td><td><code>GEAR_TOGGLE</code>, <code>HEADING_BUG_SET</code> (valeur = cap), <code>A32NX.FCU_HDG_PUSH</code></td></tr>
+  <tr><td><b>Variable</b></td><td>Écrit une SimVar ou une variable locale <code>L:</code> : <i>Fixer</i>, <i>Basculer</i> (0 ↔ 1), <i>Ajouter</i> un pas</td><td><code>L:AZP_RAF_AT_MODE</code></td></tr>
+  <tr><td><b>Input Event</b></td><td>Actionne une commande de cockpit de MSFS 2024 (avion chargé) : <i>Fixer</i>, <i>Basculer</i>, <i>Ajouter</i></td><td><code>LIGHTING_LANDING_1</code></td></tr>
+  <tr><td><b>Code</b></td><td>Exécute du <i>code avionique</i> (RPN) via le module MobiFlight WASM : événements <code>H:</code> et <code>B:</code></td><td><code>(&gt;H:AZP_RAF_ALARMS_ACKNOWLEDGE)</code></td></tr>
+</table></div>
+<p>Comment choisir ? Essayez dans cet ordre : <b>Commande</b> (l'événement standard existe-t-il ?) → <b>Input Event</b> (l'avion l'expose-t-il ?) → <b>Variable</b> (l'avion lit-il une variable <code>L:</code> ?) → <b>Code</b> (l'interrupteur passe par un événement <code>H:</code>).</p>
+
+<h3 id="msfs-commande">Mode Commande (événements SimConnect)</h3>
+<p>Le menu propose une cinquantaine de commandes standard (train, volets, aérofreins, compensateur, feux, pilote automatique, radios, pause…) classées par groupes, plus les commandes d'un A320 FlyByWire. Pour tout autre événement, choisissez <i>Avancé → Autre événement (saisie libre)</i> et tapez son nom (la casse est normalisée en majuscules). La liste complète des événements standard est dans la documentation du SDK MSFS (« Event IDs »). <b>Valeur</b> sert aux événements qui attendent un paramètre : <code>HEADING_BUG_SET</code> avec 270 fixe le cap sélecté à 270°.</p>
+
+<h3 id="msfs-variable">Mode Variable</h3>
+<p>Nom de la variable + <b>unité</b> + opération :</p>
+<ul>
+  <li><b>Fixer</b> : écrit une valeur ;</li>
+  <li><b>Basculer</b> : alterne entre la valeur « allumé » (par défaut 1) et « éteint » (par défaut 0) ;</li>
+  <li><b>Ajouter</b> : ajoute un <i>pas</i> à la valeur courante, avec minimum, maximum et « boucler » (cap 360 → 1). C'est l'opération d'un bouton rotatif.</li>
+</ul>
+<div class="note"><b>Écrire les noms correctement</b>
+<ul>
+  <li>Une SimVar standard s'écrit <b>sans préfixe</b>, en majuscules avec des espaces : <code>APU SWITCH</code>, <code>AUTOPILOT HEADING LOCK DIR</code>, avec un indice si besoin : <code>GENERAL ENG THROTTLE LEVER POSITION:1</code>. <b>N'écrivez pas <code>A:</code></b> devant : « Variable MSFS invalide ».</li>
+  <li>Une variable locale d'un avion <b>commence par <code>L:</code></b> : <code>L:A32NX_FCU_AP_1_LIGHT_ON</code>. Un indice se met après : <code>L:AZP_RAF_ENGINE_AUXILIARY_LEVER_POS:1</code>.</li>
+  <li>Unité : <code>number</code> pour la plupart des variables <code>L:</code> ; <code>bool</code> pour un 0/1 ; <code>percent</code>, <code>degrees</code>, <code>feet</code>, <code>knots</code>… pour les SimVars physiques.</li>
+</ul></div>
+<p><b>Attention :</b> écrire une variable <code>L:</code> ne commande pas toujours l'avion. Si l'avion ne fait que <i>lire</i> la variable pour animer un interrupteur (cas fréquent au Rafale), la valeur change mais la fonction n'est pas déclenchée : il faut alors le mode <b>Code</b> avec l'événement <code>H:</code>.</p>
+
+<h3 id="msfs-input">Mode Input Event</h3>
+<p>Les Input Events sont les commandes de cockpit que l'avion expose à MSFS 2024. Le champ propose la liste de ceux de <b>l'avion chargé</b> (bouton ◎ pour parcourir). Ils se manipulent comme une variable : Fixer, Basculer, Ajouter. Les Input Events peuvent aussi <i>être lus</i> pour alimenter une bascule ou un afficheur.</p>
+
+<h3 id="msfs-explorateur">L'explorateur MSFS : trouver et tester</h3>
+<p>Cliquez sur l'indicateur <b>MSFS</b> en haut de l'écran de configuration.</p>
+<ul>
+  <li>La liste montre les Input Events de l'avion chargé, avec une recherche. « Lire » affiche la valeur actuelle. <b>Actionnez un interrupteur dans le cockpit puis relisez</b> : celui dont la valeur change est la bonne commande.</li>
+  <li>En bas, <b>« Lire une variable »</b> lit n'importe quelle SimVar ou variable <code>L:</code> (nom + unité). Le même test valide un nom de variable avant de l'utiliser dans une touche.</li>
+  <li>« Exporter » enregistre la liste des commandes de l'avion.</li>
+</ul>
+
+<h3 id="msfs-inspector">Trouver les commandes d'un avion : la fenêtre Behaviors</h3>
+<p>Pour un avion non documenté, MSFS 2024 fournit tout ce qu'il faut :</p>
+<ol class="steps">
+  <li>Activez le <b>mode développeur</b> (Options → Général → Développeurs → mode développeur activé). Une barre de menus apparaît en haut de l'écran.</li>
+  <li>Menu <b>Tools → Behaviors</b>.</li>
+  <li>Dans le cockpit, pointez l'interrupteur qui vous intéresse et faites <span class="kbd">Ctrl</span>+<span class="kbd">G</span> : la fenêtre Behaviors se place sur ce composant (onglet <b>Inspector</b>).</li>
+  <li>Dépliez <b>Animations</b> (la variable qui anime l'interrupteur, souvent en <code>O:</code> ou <code>L:</code>) et <b>Update codes</b> (le code exécuté quand on clique).</li>
+  <li>Onglet <b>LocalVariables</b> (« Variab… ») avec le champ « Filter by variable name » : filtrez sur un mot (<code>APU</code>, <code>ELECTRICAL</code>…), actionnez l'interrupteur, et repérez la variable qui bouge. Décochez « only show variables get/set by this behavior » pour voir toutes les variables.</li>
+</ol>
+<p>Dans « Update codes », lisez :</p>
+<ul>
+  <li><code>(&gt;H:NOM)</code> : un <b>événement</b> déclenché → utilisez le mode <b>Code</b> ;</li>
+  <li><code>(L:NOM, Enum)</code> / <code>(&gt;L:NOM, Number)</code> : une <b>variable locale</b> lue ou écrite → mode <b>Variable</b> (ou lecture pour synchroniser) ;</li>
+  <li><code>(O:…)</code> : variable <b>propre au composant</b> (animation d'appui, état interne) : <b>illisible et non écrivable</b> depuis l'extérieur, inutile pour StreamSim.</li>
+</ul>
+
+<h3 id="msfs-lecture">Afficher ou synchroniser avec une valeur du simulateur</h3>
+<p>Une <b>bascule</b> (état), un <b>afficheur</b> (valeur), un <b>bouton rotatif</b> (valeur affichée) et un <b>curseur</b> (position) peuvent lire leur valeur dans une SimVar, une variable <code>L:</code> ou un Input Event. Choisissez la source (Variable / Input Event / SimHub), le nom et l'unité. Pour une variable qui vaut 0 à 100 %, ou pour un sélecteur à N positions, l'affichage suit la valeur lue (le libellé ou le visuel de la position courante).</p>
+
+<h2 id="code-avionique">6. Code avionique : événements H: et module WASM</h2>
+<p>Beaucoup d'avions complexes déclenchent la fonction d'un interrupteur par un <b>événement <code>H:</code></b> (« HTML event ») que SimConnect ne sait pas envoyer. Le mode <b>Code</b> résout cela avec le module gratuit <b>MobiFlight WASM</b> : StreamSim lui transmet un petit programme (RPN) qu'il exécute dans le simulateur.</p>
+
+<h3>Prérequis</h3>
+<ul>
+  <li>Le module <b>MobiFlight WASM</b> doit être dans le dossier <i>Community</i> de MSFS. Il est souvent <b>fourni avec l'avion</b> (c'est le cas du Rafale d'AzurPoly). Sinon, il s'installe avec MobiFlight (gratuit).</li>
+  <li>Le journal de StreamSim (menu de l'icône → « Ouvrir le journal ») indique si le module est détecté.</li>
+</ul>
+
+<h3>Écrire un code</h3>
+<p>Le code est du <b>RPN</b> (notation polonaise inverse) : les valeurs d'abord, l'opération à la fin. Ce qu'il faut savoir :</p>
+<div class="tablewrap"><table>
+  <tr><th>Écriture</th><th>Signification</th></tr>
+  <tr><td><code>(&gt;H:NOM)</code></td><td>Déclenche l'événement <code>H:NOM</code> (appui d'un bouton, incrément d'un sélecteur…)</td></tr>
+  <tr><td><code>5 (&gt;L:NOM, Number)</code></td><td>Écrit 5 dans la variable locale <code>NOM</code></td></tr>
+  <tr><td><code>(L:NOM, Number)</code></td><td>Lit la variable locale <code>NOM</code></td></tr>
+  <tr><td><code>(L:NOM, Number) 1 + 3 min (&gt;L:NOM, Number)</code></td><td>Ajoute 1, borne à 3, réécrit : « position suivante, sans dépasser 3 »</td></tr>
+  <tr><td><code>(L:NOM, Number) 1 - 0 max (&gt;L:NOM, Number)</code></td><td>« Position précédente, sans passer sous 0 »</td></tr>
+  <tr><td><code>(&gt;H:A) (&gt;H:B)</code></td><td>Plusieurs actions à la suite</td></tr>
+</table></div>
+<p>Le plus simple est de <b>copier les lignes <code>(&gt;H:…)</code></b> de l'Inspector (voir <a href="#msfs-inspector">Behaviors</a>) et de les coller dans le champ « Code avionique ». Un code peut contenir plusieurs événements et écritures de variables : par exemple <code>(&gt;H:AZP_RAF_ALARMS_ACKNOWLEDGE) 1 (&gt;L:AZP_RAF_VTLG_PAGE_SWITCH_L, Boolean)</code> acquitte les alarmes <i>et</i> allume le bouton correspondant.</p>
+
+<h3>Fonctionnement et limites</h3>
+<ul>
+  <li>Le code est envoyé au module à 35 ms d'intervalle au plus : plusieurs crans d'une molette successifs sont bien tous pris en compte.</li>
+  <li>Un code n'a pas de retour : pour connaître le résultat, lisez une variable <code>L:</code> (bascule ou afficheur).</li>
+  <li>Le mode Code n'est disponible que sous <b>MSFS</b>, avec le module installé.</li>
+</ul>
+
+<h3>Recette : une touche simple (un appui)</h3>
+<ol class="steps">
+  <li>Trouvez le <code>(&gt;H:…)</code> dans l'Inspector.</li>
+  <li>Bibliothèque → <i>Commande MSFS</i> sur une case.</li>
+  <li>Mode <b>Code</b> ; collez <code>(&gt;H:NOM)</code>.</li>
+  <li>Titre, couleur, icône.</li>
+</ol>
+
+<h3>Recette : une bascule qui suit l'état réel</h3>
+<ol class="steps">
+  <li>Trouvez l'événement <code>(&gt;H:…)</code> <i>et</i> la variable <code>L:</code> qui garde l'état (Behaviors → LocalVariables).</li>
+  <li>Type <b>Bascule</b> ; état 1 et état 2 avec des titres/couleurs différents (par exemple « A/T » et « A/T » allumé en vert).</li>
+  <li>Action : mode <b>Code</b> avec <code>(&gt;H:…)</code>, en cochant « Même action pour les deux états ».</li>
+  <li>Activez l'état lu dans le simulateur, source <i>Variable</i>, nom <code>L:…</code>, unité <code>number</code>.</li>
+</ol>
+
+<h3>Recette : une molette (bouton rotatif)</h3>
+<ol class="steps">
+  <li>Type <b>Bouton rotatif</b>.</li>
+  <li><b>Tourner +</b> : mode Code <code>(&gt;H:NOM_INC)</code> ; <b>Tourner −</b> : <code>(&gt;H:NOM_DEC)</code> ; <b>Appui</b> : <code>(&gt;H:NOM_PUSHED)</code> si l'avion l'a.</li>
+  <li>Sensibilité : « Normale » ou « Fine » selon l'avion.</li>
+</ol>
+
+<h3>Recette : un sélecteur à positions</h3>
+<p>Pour un sélecteur dont la position est dans une variable <code>L:</code> (0, 1, 2, 3…) :</p>
+<ol class="steps">
+  <li>Type <b>Bouton rotatif</b>.</li>
+  <li><b>Tourner +</b> : mode Code <code>(L:VAR, Number) 1 + 3 min (&gt;L:VAR, Number)</code> ; <b>Tourner −</b> : <code>(L:VAR, Number) 1 - 0 max (&gt;L:VAR, Number)</code> (remplacez <code>3</code> par la dernière position).</li>
+  <li>Cochez « Afficher une valeur du simulateur » : variable <code>L:VAR</code>, unité <code>number</code>.</li>
+</ol>
+
+<h2 id="simhub">7. SimHub</h2>
+<p>StreamSim dialogue avec <a href="https://www.simhubdash.com/">SimHub</a> grâce au plugin gratuit <b>SimHub Property Server</b> (<a href="https://github.com/pre-martin/SimHubPropertyServer">pre-martin/SimHubPropertyServer</a>).</p>
+<ol class="steps">
+  <li>Téléchargez <code>PropertyServer.dll</code> depuis la page <i>Releases</i> du plugin et copiez-le dans le dossier d'installation de SimHub (SimHub 9.6 minimum).</li>
+  <li>Relancez SimHub et activez le plugin (<i>Settings → Plugins</i>).</li>
+  <li>La pastille <b>SimHub</b> de l'écran de configuration passe au vert. StreamSim se connecte à <code>127.0.0.1:18082</code> et se reconnecte tout seul si SimHub est relancé (autre PC ou autre port : variables <code>SIMHUB_HOST</code> et <code>SIMHUB_PORT</code>).</li>
+</ol>
+<p>Ce que SimHub permet :</p>
+<ul>
+  <li><b>Afficheurs</b> : la propriété à afficher s'écrit <code>dcp.gd.X</code> (pour <code>DataCorePlugin.GameData.X</code>, par exemple <code>dcp.gd.SpeedKmh</code>) ou avec son nom complet copié dans <i>Available properties</i> de SimHub. Le bouton ◎ charge la liste des propriétés connues. Mise à jour en direct (10 fois par seconde au plus).</li>
+  <li><b>Bascules synchronisées</b> : l'état de la touche suit une propriété SimHub (limiteur de stand, contact, DRS…). L'action reste au choix, par exemple la touche du jeu.</li>
+  <li><b>Commande SimHub</b> : déclenche un « Control » SimHub. Donnez-lui un nom libre (par exemple <code>deck.dash</code>) ; dans SimHub, <i>Controls and events</i>, créez un mappage et appuyez sur la touche du Deck quand SimHub attend l'entrée. Modes : appui bref, ou appuyer / relâcher séparés (maintien). Vous pouvez ainsi changer d'écran de tableau de bord ou régler le ShakeIt.</li>
+  <li><b>Boutons rotatifs</b> et <b>curseurs</b> : leur valeur ou leur position peut aussi venir de SimHub.</li>
+</ul>
+
+<h2 id="rafale">8. Exemple complet : le Rafale (AzurPoly)</h2>
+<p>Le Rafale montre les quatre modes à l'œuvre. Ses touches sont dans la bibliothèque, catégories <i>Rafale (AzurPoly)</i> et <i>Rafale : cockpit</i>.</p>
+<div class="tablewrap"><table>
+  <tr><th>Touche</th><th>Mode utilisé</th></tr>
+  <tr><td>Train, frein de parc, aérofreins, caches, échelle, GPU</td><td><b>Input Events</b> (état réel lu dans l'avion)</td></tr>
+  <tr><td>Batterie, laser, dégivrage, EFB, luminosité des écrans</td><td><b>Variables</b> <code>L:</code></td></tr>
+  <tr><td>Pages VTLG et VTLD, molettes de visualisation et MFK, pilote automatique, APU, ECS, alarmes, largage d'urgence, canon</td><td><b>Code</b> (événements <code>H:</code>)</td></tr>
+  <tr><td>Sélecteur 5K, leviers moteur AEC</td><td>Bouton rotatif avec <b>visuel qui suit une variable</b> <code>L:</code></td></tr>
+</table></div>
+<p>Pour créer une touche qui n'existe pas : suivez la recette de la section <a href="#msfs-inspector">Behaviors</a>. Exemples : <code>(&gt;H:AZP_RAF_ALARMS_ACKNOWLEDGE)</code> pour acquitter les alarmes ; <code>(&gt;H:AZP_RAF_AP_AT_TOGGLE)</code> avec la variable <code>L:AZP_RAF_AT_MODE</code> pour une bascule A/T. La liste complète des événements et variables est la page « Custom variables and events » de la documentation AzurPoly.</p>
+<div class="note"><b>Limite connue</b>Certains états ne sont pas lisibles de l'extérieur (l'ECS n'a pas de variable). La touche garde alors son propre état (elle alterne OFF/ON à chaque appui) ; un appui long la recale.</div>
+
+<h2 id="autres-avions">9. A320neo FlyByWire et autres avions</h2>
+<p>La catégorie <i>A320 FlyByWire</i> s'appuie sur la documentation officielle FlyByWire, sans module supplémentaire : boutons <b>SPD, HDG, ALT, V/S, BARO</b> (tourner = régler, appui = enfoncer/managé, appui long = tirer/sélecté), <b>AP1, AP2, A/THR, LOC, APPR, EXPED, FD, LS</b> avec leur voyant, auto-freinage LO/MED/MAX.</p>
+<p>Pour tout autre avion, le principe est toujours le même :</p>
+<ol class="steps">
+  <li>Essayez les <b>commandes standard</b> (catégorie <i>MSFS 2024 (SimConnect)</i>, une trentaine de touches prêtes).</li>
+  <li>Si l'avion les ignore, ouvrez l'<b>explorateur</b> pour ses Input Events.</li>
+  <li>Sinon, cherchez ses <b>variables <code>L:</code></b> et ses <b>événements <code>H:</code></b> avec Behaviors.</li>
+  <li>À défaut, utilisez de simples <b>raccourcis clavier</b> (catégorie <i>Simulation (raccourcis clavier)</i>) qui reproduisent les affectations du simulateur.</li>
+</ol>
+
+<h2 id="depannage">10. Dépannage</h2>
+<div class="tablewrap"><table>
+  <tr><th>Symptôme</th><th>Piste</th></tr>
+  <tr><td>Le Deck affiche « Le PC ne répond pas »</td><td>Wi-Fi de la tablette coupé ou StreamSim arrêté sur le PC. Il se reconnecte seul dès que le réseau revient. Désactivez l'économie d'énergie du Wi-Fi dans Android si ça se répète.</td></tr>
+  <tr><td>Une touche clavier ne fait rien dans un jeu</td><td><a href="#jeux">Mode jeu</a>, durée d'appui, jeu au premier plan, administrateur.</td></tr>
+  <tr><td>« Variable MSFS invalide »</td><td>Une SimVar standard s'écrit sans <code>A:</code> (<code>APU SWITCH</code>) ; une variable locale commence par <code>L:</code>.</td></tr>
+  <tr><td>La touche MSFS n'a aucun effet, la variable change</td><td>L'avion lit seulement la variable : cherchez l'événement <code>H:</code> et utilisez le mode <b>Code</b>.</td></tr>
+  <tr><td>« Code » sans effet</td><td>Module MobiFlight WASM absent du dossier Community, ou événement mal recopié. Consultez le journal.</td></tr>
+  <tr><td>Une touche à bascule est désynchronisée</td><td>Appui long (recale sans rien envoyer), ou activez l'état lu dans le simulateur.</td></tr>
+  <tr><td>Le nom d'une variable n'est pas reconnu</td><td>Testez-le avec « Lire une variable » de l'explorateur MSFS avec la bonne unité.</td></tr>
+  <tr><td>Une variable s'appelle <code>O:…</code></td><td>Variable interne au composant : inutilisable. Cherchez une variable <code>L:</code> ou un événement <code>H:</code>.</td></tr>
+  <tr><td>L'application Android ne s'installe pas</td><td>Ouvrez l'APK depuis le gestionnaire de fichiers, désinstallez une ancienne version (avant 0.6.1), désactivez Play Protect temporairement.</td></tr>
+  <tr><td>Signaler un problème</td><td>Menu de l'icône de StreamSim → <b>Ouvrir le journal</b> (<code>streamsim.log</code>) et joindre le fichier.</td></tr>
+</table></div>
+
+<h2 id="reference">11. Référence rapide</h2>
+<h3>Mises à jour</h3>
+<p>À chaque lancement, les applications vérifient les versions publiées sur GitHub et proposent la mise à jour d'elles-mêmes (PC : « Mettre à jour maintenant » ; Android : « Installer », l'APK transitant au besoin par le PC).</p>
+
+<h3>Variables d'environnement du serveur</h3>
+<div class="tablewrap"><table>
+  <tr><th>Variable</th><th>Défaut</th><th>Rôle</th></tr>
+  <tr><td><code>PORT</code></td><td><code>3210</code></td><td>Port HTTP (la découverte réseau utilise toujours l'UDP 3211)</td></tr>
+  <tr><td><code>HOST</code></td><td><code>0.0.0.0</code></td><td>Interface d'écoute (<code>127.0.0.1</code> pour interdire l'accès réseau)</td></tr>
+  <tr><td><code>DECK_DATA_DIR</code></td><td><code>./data</code></td><td>Dossier de la configuration (<code>config.json</code>)</td></tr>
+  <tr><td><code>DECK_REMOTE_ADMIN</code></td><td>—</td><td><code>1</code> : autorise la configuration depuis un autre appareil</td></tr>
+  <tr><td><code>DECK_DRY_RUN</code></td><td>—</td><td><code>1</code> : mode simulation, les actions sont journalisées sans être envoyées</td></tr>
+  <tr><td><code>SIMHUB_HOST</code> / <code>SIMHUB_PORT</code></td><td><code>127.0.0.1</code> / <code>18082</code></td><td>Adresse du plugin SimHub Property Server</td></tr>
+</table></div>
+
+<h3>Sécurité</h3>
+<ul>
+  <li>Par défaut, <b>seul l'ordinateur hôte</b> peut modifier la configuration ou tester des actions. Les autres appareils du réseau peuvent uniquement appuyer sur les touches déjà configurées.</li>
+  <li>Les requêtes provenant d'autres sites web sont refusées (protection CSRF et DNS rebinding).</li>
+  <li>Les actions « Commande système » s'exécutent avec vos droits d'utilisateur : n'y collez que des commandes que vous comprenez.</li>
+</ul>
+
+<h3>Où sont les données ?</h3>
+<p>Application PC : configuration dans <code>%APPDATA%\StreamSim\data</code> (Windows), sauvegardes dans son sous-dossier <code>backups</code>, journal <code>streamsim.log</code>. Serveur seul : dossier <code>DECK_DATA_DIR</code>.</p>
+
+<p style="margin-top:40px;color:var(--faint);font-size:13px">Cette documentation est servie par le serveur StreamSim à l'adresse <code>/docs</code> : elle est donc toujours à jour avec la version installée, et accessible depuis n'importe quel appareil du réseau.</p>
+</main>
+</div>
+
+<script>
+(function () {
+  // Sommaire construit à partir des titres, avec surlignage de la section visible.
+  var toc = document.getElementById('toc');
+  var heads = document.querySelectorAll('main h2, main h3');
+  var links = [];
+  heads.forEach(function (h) {
+    if (!h.id) return;
+    var a = document.createElement('a');
+    a.href = '#' + h.id;
+    a.textContent = h.textContent.replace(/^\d+\.\s*/, '');
+    if (h.tagName === 'H3') a.className = 'h3';
+    toc.appendChild(a);
+    links.push([h, a]);
+  });
+  var current = null;
+  function update() {
+    var y = window.scrollY + 90;
+    var active = null;
+    links.forEach(function (p) { if (p[0].offsetTop <= y) active = p[1]; });
+    if (active !== current) {
+      if (current) current.classList.remove('on');
+      if (active) active.classList.add('on');
+      current = active;
+    }
+  }
+  window.addEventListener('scroll', update, { passive: true });
+  update();
+  document.getElementById('navToggle').addEventListener('click', function () {
+    document.getElementById('nav').classList.toggle('open');
+  });
+  toc.addEventListener('click', function () { document.getElementById('nav').classList.remove('open'); });
+  // Numéro de version du serveur.
+  fetch('/api/status').then(function (r) { return r.json(); }).then(function (s) {
+    if (s && s.version) document.getElementById('ver').textContent = 'v' + s.version;
+  }).catch(function () {});
+})();
+</script>
+</body>
+</html>
