@@ -330,6 +330,20 @@ body {
   align-items: center;
   gap: 16px;
 }
+.page-bar {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+  flex: 0 1 auto;
+  max-width: 100%;
+}
+.page-bar .btn {
+  flex: none;
+}
+.page-bar .btn[hidden] {
+  display: none;
+}
 .page-tabs {
   display: flex;
   align-items: center;

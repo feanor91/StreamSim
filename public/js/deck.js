@@ -1,5 +1,5 @@
 import { api, subscribe } from './api.js';
-import { h, toast } from './dom.js';
+import { h, toast, pagePicker } from './dom.js';
 import { keyFace } from './catalog.js';
 import { computeCells, stateKey, fitGrid, orientCell } from '/shared/layout.js';
 import { DIAL_SENSITIVITY, STEPPED_SENSITIVITY, STEPPED_DELAY_MS, clamp } from '/shared/controls.js';
@@ -84,13 +84,25 @@ function render(direction = 0) {
   $('deckProfile').textContent = profile().name;
   $('deckPage').textContent = pg.name;
   const pages = profile().pages;
+  // Quelques pages : des points. Beaucoup de pages : un compteur « 3 / 40 » qui ouvre la liste
+  // (avec recherche) de toutes les pages ; le glissement du doigt reste possible dans les deux cas.
+  const idx = pages.findIndex((p) => p.id === pg.id);
   $('deckDots').replaceChildren(
-    ...(pages.length > 1
-      ? pages.map((p) =>
-          h('button', { class: p.id === pg.id ? 'on' : '', title: p.name, onclick: () => p.id !== pg.id && goToPage(p.id) }),
-        )
-      : []),
+    ...(pages.length > MAX_DOTS
+      ? [h('button', { class: 'deck-pages-btn', title: 'Toutes les pages', onclick: openPageList }, `${idx + 1} / ${pages.length}`)]
+      : pages.length > 1
+        ? pages.map((p) =>
+            h('button', { class: p.id === pg.id ? 'on' : '', title: p.name, onclick: () => p.id !== pg.id && goToPage(p.id) }),
+          )
+        : []),
   );
+}
+
+const MAX_DOTS = 12;
+
+async function openPageList() {
+  const id = await pagePicker({ pages: profile().pages, currentId: page().id, focusSearch: false });
+  if (id && id !== page().id) goToPage(id);
 }
 
 const toggleState = (pageId, i) => (state.toggles[stateKey(profile().id, pageId, i)] ? 1 : 0);

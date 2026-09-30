@@ -1,6 +1,6 @@
 import { KEY_GROUPS, MODIFIERS, MEDIA_ACTIONS, keyFromEvent, keyLabel } from '/shared/keys.js';
 import { api, clientId, subscribe } from './api.js';
-import { h, icon, toast, promptModal, confirmModal, openMenu, openModal } from './dom.js';
+import { h, icon, toast, promptModal, confirmModal, openMenu, openModal, pagePicker } from './dom.js';
 import {
   ACTION_TYPES, STEP_TYPES, DELAY_TYPE, LIBRARY, COLORS, EMOJIS,
   libraryItemInfo, createFromLibrary, keyFace, isMac, isIconPath, setGameDefault,
@@ -247,8 +247,28 @@ function renderTabs() {
       });
       return tab;
     }),
-    h('button', { class: 'page-tab add', title: 'Ajouter une page', onclick: addPage }, icon('plus')),
   );
+  $('pageListCount').textContent = String(pages.length);
+  $('pageListBtn').title = `Toutes les pages (${pages.length}) : liste avec recherche`;
+  nav.querySelector('.page-tab.on')?.scrollIntoView?.({ block: 'nearest', inline: 'center' });
+  updateTabArrows();
+}
+
+// Flèches de défilement de la barre d'onglets : visibles seulement quand des pages débordent.
+function updateTabArrows() {
+  const nav = $('pageTabs');
+  const overflow = nav.scrollWidth > nav.clientWidth + 1;
+  $('tabsLeft').hidden = !overflow || nav.scrollLeft <= 1;
+  $('tabsRight').hidden = !overflow || nav.scrollLeft + nav.clientWidth >= nav.scrollWidth - 1;
+}
+
+// Liste avec recherche de toutes les pages du profil : aucune page n'est hors d'atteinte.
+async function openPageList() {
+  const id = await pagePicker({ pages: profile().pages, currentId: page().id });
+  if (!id || id === page().id) return;
+  state.pageId = id;
+  state.selected = null;
+  renderAll();
 }
 
 function renderGrid() {
@@ -714,6 +734,18 @@ function actionFields(getAction, tag) {
               ...pages.map((p) => h('option', { value: p.id, selected: p.id === a.pageId }, p.name)),
             ),
           ),
+        ),
+        h(
+          'button',
+          {
+            class: 'btn small',
+            onclick: async () => {
+              const id = await pagePicker({ pages, currentId: getAction().pageId, title: 'Choisir la page de destination' });
+              if (id) commit(() => (getAction().pageId = id), { render: 'key' });
+            },
+          },
+          icon('search'),
+          `Parcourir les ${pages.length} pages…`,
         ),
         h(
           'button',
@@ -2132,7 +2164,18 @@ function keyMenu(anchor, i) {
     const others = profile().pages.filter((p) => p.id !== page().id);
     if (others.length) {
       items.push('-', { title: 'Déplacer vers' });
-      for (const p of others) items.push({ label: p.name, icon: 'folder', run: () => moveKeyToPage(i, p.id) });
+      if (others.length > 8) {
+        items.push({
+          label: `Choisir parmi ${others.length} pages…`,
+          icon: 'folder',
+          run: async () => {
+            const id = await pagePicker({ pages: profile().pages.filter((p) => p.id !== page().id), title: 'Déplacer la touche vers…' });
+            if (id) moveKeyToPage(i, id);
+          },
+        });
+      } else {
+        for (const p of others) items.push({ label: p.name, icon: 'folder', run: () => moveKeyToPage(i, p.id) });
+      }
     }
     items.push('-', { label: 'Effacer', icon: 'trash', danger: true, run: () => clearKey(i) });
   }
@@ -2515,6 +2558,19 @@ function bindGlobal() {
   $('msfsPill').addEventListener('click', () => openExplorer());
   $('updatePill').addEventListener('click', onUpdatePill);
   $('backupsBtn').addEventListener('click', openBackups);
+  $('pageAddBtn').addEventListener('click', addPage);
+  $('pageListBtn').addEventListener('click', openPageList);
+  $('tabsLeft').addEventListener('click', () => $('pageTabs').scrollBy({ left: -$('pageTabs').clientWidth * 0.7, behavior: 'smooth' }));
+  $('tabsRight').addEventListener('click', () => $('pageTabs').scrollBy({ left: $('pageTabs').clientWidth * 0.7, behavior: 'smooth' }));
+  $('pageTabs').addEventListener('scroll', updateTabArrows, { passive: true });
+  // La molette de la souris fait défiler les onglets à l'horizontale.
+  $('pageTabs').addEventListener('wheel', (e) => {
+    if (!e.deltaX && e.deltaY) {
+      e.preventDefault();
+      $('pageTabs').scrollLeft += e.deltaY;
+    }
+  }, { passive: false });
+  window.addEventListener('resize', updateTabArrows);
   $('appVersion').addEventListener('click', checkUpdateNow);
   $('librarySearch').addEventListener('input', renderLibrary);
   $('layoutSelect').addEventListener('change', (e) => {
