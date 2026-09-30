@@ -137,8 +137,8 @@ versions publiées. La mise à jour automatique d'Android fonctionne à partir d
 - **Pages** : onglets au-dessus de la grille (double-clic pour renommer, clic
   droit pour les autres options). **Pas de limite de nombre de pages** : des flèches ‹ ›
   font défiler les onglets, le bouton « liste » (avec le nombre de pages) ouvre toutes
-  les pages avec une recherche, et le Deck affiche un compteur « 3 / 40 » cliquable
-  au-delà de 12 pages. **Glissez un onglet** sur un autre pour changer
+  les pages avec une recherche, et sur le Deck, toucher le nom de la page (▾) ouvre la liste de toutes
+  les pages ; au-delà de 10 pages, les points deviennent un compteur « 3 / 40 » cliquable. **Glissez un onglet** sur un autre pour changer
   l'ordre des pages (un repère indique où il sera inséré) ; le clic droit propose
   aussi « Déplacer à gauche / à droite / en premier / en dernier ». L'ordre est
   celui du Deck. Une touche « Page » permet de naviguer entre les pages, comme
