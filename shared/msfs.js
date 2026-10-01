@@ -526,6 +526,32 @@ const rafEventToggle = (label, event, stateVar, title, onTitle, { onColor = ON_G
   face: { title, icon: null, color: RAF },
   alt: { title: onTitle, icon: null, color: onColor },
 });
+// Capot de protection du FCS TEST : le clic de l'avion inverse la variable du capot seulement quand
+// l'interrupteur de test est au repos (mode 0) ; le même code est repris ici.
+const FCS_MODE = 'AZP_RAF_HANDLING_FCS_TEST_MODE';
+const FCS_HOOD = 'AZP_RAF_HANDLING_FCS_TEST_SWITCH_HOOD';
+const rafFcsHood = () => ({
+  label: 'FCS TEST : capot de protection',
+  desc: 'Rafale · code avionique (MobiFlight)',
+  action: {
+    type: 'toggle',
+    same: true,
+    sync: { simvar: lvar(FCS_HOOD), unit: 'number' },
+    actions: [code(`(L:${FCS_MODE}, Enum) 0 == if{ (L:${FCS_HOOD}, Bool) ! (>L:${FCS_HOOD}, Bool) }`)],
+  },
+  face: { title: 'CAPOT FCS', icon: null, color: RAF },
+  alt: { title: 'CAPOT OUVERT', icon: null, color: ON_AMBER },
+});
+// FCS TEST court : l'interrupteur passe en position « court » (mode 1) un instant, capot ouvert seulement.
+const rafFcsTest = () => ({
+  label: 'FCS TEST : test court (capot ouvert)',
+  desc: 'Rafale · code avionique (MobiFlight, à vérifier)',
+  action: {
+    type: 'multi',
+    steps: [code(`(L:${FCS_HOOD}, Bool) if{ 1 (>L:${FCS_MODE}, Enum) }`), { type: 'delay', ms: 500 }, code(`0 (>L:${FCS_MODE}, Enum)`)],
+  },
+  face: { title: 'FCS TEST', icon: null, color: '#78350f' },
+});
 // Sélecteur à positions (0, 1, 2…) : tourner = position suivante / précédente, sans dépasser
 // les butées ; la touche affiche le nom de la position.
 const rafSelector = (label, stateVar, labels, title, { images = null, span = null } = {}) => {
@@ -560,6 +586,8 @@ export const RAFALE_COCKPIT_PRESETS = [
   rafVar('Direction roue avant (coupure)', 'AZP_RAF_HYDRAULIC_NOSEWHEEL_STEERING_OFF', 'Dir. roue AV', 'DIR. COUPÉE', null, { onColor: ON_AMBER }),
   rafVar('Crosse (secours)', 'AZP_RAF_HYDRAULIC_TAILHOOK_EMERGENCY_SWITCH', 'Crosse', 'CROSSE', null, { onColor: ON_AMBER }),
   rafVar('Tablette EFB', 'AZP_RAF_EFB_ON', 'EFB', 'EFB', null),
+  // Sécurité des générateurs : le clic de l'avion inverse directement cette variable (Bool, 0 au départ).
+  rafVar('Sécurité générateurs (GEN SAFETY)', 'AZP_RAF_ELECTRICAL_GEN_SAFETY_SWITCH', 'GEN SAFETY', 'GEN SAFETY', 'battery', { onColor: ON_AMBER }),
   // Commandes relevées dans l'Inspector (Ctrl+G) et dans la documentation AzurPoly
   // (« Custom variables and events ») : événements H: exécutés par le module MobiFlight WASM ;
   // pour les boutons de page, la variable L: n'anime que le bouton.
@@ -603,6 +631,10 @@ export const RAFALE_COCKPIT_PRESETS = [
   rafEvent('Acquitter les alarmes', 'AZP_RAF_ALARMS_ACKNOWLEDGE', 'ACQ ALARM', { color: '#78350f' }),
   rafEvent('Largage d’urgence des charges', 'AZP_RAF_WEAPONS_EMERGENCY_JETTISON_PRESSED', 'LARGAGE', { color: '#7f1d1d' }),
   rafEvent('Recharger le canon', 'AZP_RAF_WEAPONS_GUN_REFILL', 'CANON', { color: '#3f3f46' }),
+  // Test des commandes de vol (FCS TEST) : un capot de protection à ouvrir, puis l'interrupteur
+  // (position centrale = repos ; « court » = animation à 200). Codes relevés dans l'Inspector.
+  rafFcsHood(),
+  rafFcsTest(),
   rafDial('Éclairage des panneaux', 'AZP_RAF_LIGHTING_PANEL_BACKLIGHT_INTENSITY', 'Panneaux', { max: 1 }),
   rafDial('Éclairage des voyants', 'AZP_RAF_LIGHTING_INTERIOR_INDICATORS_INTENSITY', 'Voyants', { max: 1 }),
   rafDial('Luminosité VTLG', 'AZP_RAF_AVIONICS_BRIGHTNESS_VTLG', 'Lum. VTLG', { max: 1 }),
