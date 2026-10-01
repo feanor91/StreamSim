@@ -56,6 +56,12 @@
   .pills { display: flex; flex-wrap: wrap; gap: 8px; margin: 14px 0; }
   .pills a { padding: 6px 12px; border-radius: 999px; background: var(--panel-2); border: 1px solid var(--line-2); text-decoration: none; color: var(--text); font-size: 13px; }
   .pills a:hover { border-color: var(--accent); }
+  .shot { max-width: 100%; border-radius: 12px; border: 1px solid var(--line-2); display: block; }
+  figure.shot-fig { margin: 16px 0 22px; max-width: 420px; }
+  figure.shot-fig.wide { max-width: 760px; }
+  figure.shot-fig figcaption { color: var(--muted); font-size: 12.5px; margin-top: 7px; line-height: 1.5; }
+  .shot-row { display: flex; flex-wrap: wrap; gap: 20px; margin: 16px 0 22px; }
+  .shot-row figure.shot-fig { margin: 0; }
   @media (max-width: 860px) {
     .doc { grid-template-columns: 1fr; }
     .doc-nav { position: static; height: auto; border-right: 0; border-bottom: 1px solid var(--line); }
@@ -99,6 +105,7 @@
   <li>Quand vous appuyez sur le Deck, il envoie l'ordre <b>au serveur</b> sur le Wi-Fi, et c'est le serveur qui agit sur le PC : il envoie des touches au clavier, ouvre un programme, ou parle au simulateur.</li>
   <li>Le serveur renvoie aussi au Deck l'<b>état</b> des touches (bascules, valeurs affichées) : une touche peut s'allumer quand le train est sorti, ou afficher la vitesse en direct.</li>
 </ul>
+<figure class="shot-fig wide"><img class="shot" src="/public/docs-img/deck.jpg" alt="Le Deck en plein écran, avec les touches du profil Microsoft Flight Simulator"><figcaption>Le Deck, affiché en plein écran sur le téléphone ou la tablette.</figcaption></figure>
 <div class="tablewrap"><table>
   <tr><th>Pour agir sur…</th><th>StreamSim utilise…</th></tr>
   <tr><td>Windows, un programme, un jeu</td><td>Touches clavier envoyées par le système (<code>SendInput</code>), texte, multimédia, lancement de programmes</td></tr>
@@ -107,6 +114,9 @@
 </table></div>
 
 <h2 id="premiere-touche">2. Créer et régler une touche</h2>
+<div class="shot-row">
+  <figure class="shot-fig wide"><img class="shot" src="/public/docs-img/interface-configuration.jpg" alt="Interface de configuration : bibliothèque d'actions à gauche, grille de touches au centre, inspecteur à droite"><figcaption>L'interface de configuration : bibliothèque (gauche), grille (centre), inspecteur (droite).</figcaption></figure>
+</div>
 <p>L'interface de configuration comporte trois zones :</p>
 <ul>
   <li><b>Bibliothèque</b> (à gauche) : des actions et des touches toutes faites, classées par groupes (repliés par défaut, cliquez sur un titre pour l'ouvrir). Une recherche déplie les groupes qui contiennent un résultat.</li>
@@ -169,6 +179,7 @@
 </table></div>
 
 <h3 id="a-raccourci">Raccourci clavier</h3>
+<figure class="shot-fig"><img class="shot" src="/public/docs-img/action-raccourci.jpg" alt="Inspecteur : action Raccourci clavier, exemple Ctrl+C enregistré, avec le logiciel cible"><figcaption>Exemple : <code>Ctrl + C</code> capturé au clavier (bouton « Cliquez ici puis appuyez sur le raccourci »).</figcaption></figure>
 <p>Deux façons de définir la touche :</p>
 <ul>
   <li><b>Enregistrement</b> : cliquez dans la zone « Raccourci », puis appuyez sur la combinaison voulue au clavier (<span class="kbd">Échap</span> annule). L'enregistrement retient la <i>position physique</i> de la touche : un « A » d'un clavier AZERTY est bien enregistré comme « A ».</li>
@@ -199,6 +210,7 @@
 </ul>
 
 <h3 id="a-rotatif">Bouton rotatif</h3>
+<figure class="shot-fig"><img class="shot" src="/public/docs-img/action-rotatif.jpg" alt="Inspecteur : action Bouton rotatif, avec Tourner + réglé sur Droite et Tourner - réglé sur Gauche"><figcaption>Exemple : « Tourner + » → <code>Droite</code>, « Tourner − » → <code>Gauche</code> (deux raccourcis clavier, mais n'importe quel type d'action convient).</figcaption></figure>
 <p>Un bouton rotatif se manipule en glissant le doigt (ou la molette de la souris sur PC) :</p>
 <ul>
   <li>vers la droite ou le haut = <b>Tourner +</b> ; vers la gauche ou le bas = <b>Tourner −</b>. Chaque cran envoie l'action correspondante. La <b>sensibilité</b> (fine, normale, rapide) règle la distance de glissement par cran ;</li>
@@ -267,6 +279,7 @@
 <p>Comment choisir ? Essayez dans cet ordre : <b>Commande</b> (l'événement standard existe-t-il ?) → <b>Input Event</b> (l'avion l'expose-t-il ?) → <b>Variable</b> (l'avion lit-il une variable <code>L:</code> ?) → <b>Code</b> (l'interrupteur passe par un événement <code>H:</code>).</p>
 
 <h3 id="msfs-commande">Mode Commande (événements SimConnect)</h3>
+<figure class="shot-fig"><img class="shot" src="/public/docs-img/action-msfs-commande.jpg" alt="Inspecteur : action Commande MSFS, menu déroulant des commandes classées par catégorie (Train & freins, Volets & compensation, Feux…)"><figcaption>Le menu déroulant classé par catégorie, avec une recherche.</figcaption></figure>
 <p>Le menu propose une cinquantaine de commandes standard (train, volets, aérofreins, compensateur, feux, pilote automatique, radios, pause…) classées par groupes, plus les commandes d'un A320 FlyByWire. Pour tout autre événement, choisissez <i>Avancé → Autre événement (saisie libre)</i> et tapez son nom (la casse est normalisée en majuscules). La liste complète des événements standard est dans la documentation du SDK MSFS (« Event IDs »). <b>Valeur</b> sert aux événements qui attendent un paramètre : <code>HEADING_BUG_SET</code> avec 270 fixe le cap sélecté à 270°.</p>
 
 <h3 id="msfs-variable">Mode Variable</h3>
@@ -324,6 +337,7 @@
 </ul>
 
 <h3>Écrire un code</h3>
+<figure class="shot-fig"><img class="shot" src="/public/docs-img/action-msfs-code-wasm.jpg" alt="Inspecteur : action Commande MSFS, mode Code, avec un exemple de code avionique MobiFlight WASM"><figcaption>Le champ « Code avionique (RPN) » du mode <b>Code</b>, avec un exemple collé depuis l'Inspector de MSFS.</figcaption></figure>
 <p>Le code est du <b>RPN</b> (notation polonaise inverse) : les valeurs d'abord, l'opération à la fin. Ce qu'il faut savoir :</p>
 <div class="tablewrap"><table>
   <tr><th>Écriture</th><th>Signification</th></tr>
@@ -390,6 +404,7 @@
 </ul>
 
 <h2 id="rafale">8. Exemple complet : le Rafale (AzurPoly)</h2>
+<figure class="shot-fig wide"><img class="shot" src="/public/docs-img/deck-rafale.jpg" alt="Le Deck sur la page Rafale : boutons rotatifs (VISU G/D, MFK…) et commandes de cockpit"><figcaption>La page Rafale sur le Deck : boutons rotatifs, bascules et commandes de cockpit.</figcaption></figure>
 <p>Le Rafale montre les quatre modes à l'œuvre. Ses touches sont dans la bibliothèque, catégories <i>Rafale (AzurPoly)</i> et <i>Rafale : cockpit</i>.</p>
 <div class="tablewrap"><table>
   <tr><th>Touche</th><th>Mode utilisé</th></tr>
