@@ -130,6 +130,7 @@
   <li><b>Personnalisez l'apparence</b> : titre, icône (emoji, icône <i>Aviation</i> ou image), couleur, et taille (section « Apparence »).</li>
   <li><b>Testez</b> : clic droit sur la touche → « Tester », ou appuyez sur le Deck. L'enregistrement est automatique.</li>
 </ol>
+<figure class="shot-fig"><img class="shot" src="/public/docs-img/apparence-partagee.jpg" alt="Inspecteur : section Apparence commune, icône Emoji, couleur de fond, taille (touches fusionnées)"><figcaption>La section « Apparence » (titre, icône, couleur, taille) est la même quel que soit le type d'action.</figcaption></figure>
 <div class="tip"><b>Astuce</b>Pour créer une touche proche d'une touche existante, dupliquez-la (<span class="kbd">Ctrl</span>+<span class="kbd">D</span>) puis modifiez-la.</div>
 
 <h3 id="pages">Pages, profils, dispositions</h3>
@@ -178,8 +179,20 @@
   <tr><td><a href="#simhub">Commande SimHub</a></td><td>Déclenche un « Control » SimHub</td></tr>
 </table></div>
 
+<div class="shot-row">
+  <figure class="shot-fig"><img class="shot" src="/public/docs-img/action-multimedia.jpg" alt="Inspecteur : action Multimédia, commande Lecture / Pause"><figcaption>Multimédia : commande « Lecture / Pause ».</figcaption></figure>
+  <figure class="shot-fig"><img class="shot" src="/public/docs-img/action-application.jpg" alt="Inspecteur : action Application, avec obs64.exe"><figcaption>Application : chemin vers <code>obs64.exe</code>.</figcaption></figure>
+  <figure class="shot-fig"><img class="shot" src="/public/docs-img/action-siteweb.jpg" alt="Inspecteur : action Site web, avec youtube.com"><figcaption>Site web : adresse <code>youtube.com</code>.</figcaption></figure>
+  <figure class="shot-fig"><img class="shot" src="/public/docs-img/action-commande.jpg" alt="Inspecteur : action Commande système, avec l'avertissement de sécurité"><figcaption>Commande système, avec l'avertissement de sécurité.</figcaption></figure>
+  <figure class="shot-fig"><img class="shot" src="/public/docs-img/action-page.jpg" alt="Inspecteur : action Page, page de destination Rafale"><figcaption>Page : destination « Rafale ».</figcaption></figure>
+</div>
+
 <h3 id="a-raccourci">Raccourci clavier</h3>
-<figure class="shot-fig"><img class="shot" src="/public/docs-img/action-raccourci.jpg" alt="Inspecteur : action Raccourci clavier, exemple Ctrl+C enregistré, avec le logiciel cible"><figcaption>Exemple : <code>Ctrl + C</code> capturé au clavier (bouton « Cliquez ici puis appuyez sur le raccourci »).</figcaption></figure>
+<div class="shot-row">
+  <figure class="shot-fig"><img class="shot" src="/public/docs-img/action-raccourci-1.png" alt="Inspecteur : type Raccourci sélectionné, raccourci Ctrl+F capturé"><figcaption>Le type « Raccourci » et le raccourci capturé (<code>Ctrl + F</code>).</figcaption></figure>
+  <figure class="shot-fig"><img class="shot" src="/public/docs-img/action-raccourci-2.png" alt="Mode jeu, Répéter, Logiciel cible et début de la section Apparence"><figcaption>Mode jeu, Répéter, Logiciel cible.</figcaption></figure>
+  <figure class="shot-fig"><img class="shot" src="/public/docs-img/action-raccourci-3.png" alt="Couleur de fond et Taille (touches fusionnées)"><figcaption>Couleur et taille (communes à toutes les touches).</figcaption></figure>
+</div>
 <p>Deux façons de définir la touche :</p>
 <ul>
   <li><b>Enregistrement</b> : cliquez dans la zone « Raccourci », puis appuyez sur la combinaison voulue au clavier (<span class="kbd">Échap</span> annule). L'enregistrement retient la <i>position physique</i> de la touche : un « A » d'un clavier AZERTY est bien enregistré comme « A ».</li>
@@ -188,6 +201,7 @@
 <p><b>Répéter</b> envoie le raccourci plusieurs fois de suite (jusqu'à 50, 40 ms d'écart). Pour les jeux qui ignorent la touche, voir <a href="#jeux">le Mode jeu</a>.</p>
 
 <h3 id="a-texte">Texte</h3>
+<figure class="shot-fig"><img class="shot" src="/public/docs-img/action-texte.jpg" alt="Inspecteur : action Texte, avec « Cordialement, » saisi"><figcaption>Exemple : le texte « Cordialement, » saisi dans le champ.</figcaption></figure>
 <p>Tape le texte tel quel, en Unicode (accents, emojis). « Valider par Entrée » ajoute un retour à la ligne à la fin.</p>
 
 <h4>Logiciel cible (raccourci et texte)</h4>
@@ -199,9 +213,13 @@
 <p>Le bouton ⟳ liste les fenêtres ouvertes. Selon le système : Windows utilise <code>SendInput</code> sans prérequis ; macOS utilise AppleScript (autorisez le terminal dans <i>Réglages › Confidentialité › Accessibilité</i>) ; Linux utilise <code>xdotool</code> (+ <code>wmctrl</code>).</p>
 
 <h3 id="a-multi">Multi-actions</h3>
+<figure class="shot-fig"><img class="shot" src="/public/docs-img/action-multi-1.jpg" alt="Inspecteur : action Multi-actions, étape 1 Commande MSFS Train d'atterrissage"><figcaption>Étape 1 : Commande MSFS « Train d'atterrissage (basculer) ».</figcaption></figure>
+<figure class="shot-fig"><img class="shot" src="/public/docs-img/action-multi-2.jpg" alt="Inspecteur : Multi-actions, étape 2 Pause 300 ms puis étape 3 Commande MSFS"><figcaption>Étapes 2 et 3 : Pause (300 ms) puis une autre commande, avec les flèches pour réordonner.</figcaption></figure>
 <p>Une suite d'étapes exécutées l'une après l'autre : raccourci, texte, multimédia, application, site web, commande, commande MSFS, commande SimHub et <b>Pause</b> (durée en millisecondes). Exemple : « démarrage moteur » = commande MSFS, pause 500 ms, autre commande MSFS.</p>
 
 <h3 id="a-bascule">Bascule (deux états)</h3>
+<figure class="shot-fig"><img class="shot" src="/public/docs-img/action-bascule-1.jpg" alt="Inspecteur : action Bascule, même action pour les deux états, raccourci G"><figcaption>« Même action pour les deux états », raccourci <code>G</code> (touche de train classique).</figcaption></figure>
+<figure class="shot-fig"><img class="shot" src="/public/docs-img/action-bascule-2.jpg" alt="Inspecteur : Bascule, état lu dans le simulateur, bouton Changer d'état, onglets État 1 / État 2"><figcaption>« État lu dans le simulateur », bouton « Changer d'état », et les onglets État 1 / État 2 pour régler l'apparence de chacun.</figcaption></figure>
 <p>Une bascule a deux états, chacun avec son titre, son icône, sa couleur. À chaque appui elle envoie l'action de son état puis change d'état ; deux pastilles indiquent l'état courant. Vous pouvez donner deux actions différentes, ou la <b>même action</b> pour les deux états (touche « G » du train, par exemple).</p>
 <ul>
   <li>L'état est gardé par le PC : téléphone, tablette et écran de configuration affichent le même.</li>
@@ -221,6 +239,8 @@
 <div class="note"><b>Sélecteurs à positions</b>Pour un sélecteur à positions nommées (STOP/IDLE/NORM/FIX), un bouton rotatif dont la valeur affichée est lue dans une variable <code>L:</code> convient bien. Les touches du groupe <i>Rafale : cockpit</i> montrent des exemples : le libellé ou le visuel affiché suit la valeur de la variable.</div>
 
 <h3 id="a-curseur">Curseur</h3>
+<figure class="shot-fig"><img class="shot" src="/public/docs-img/action-curseur-pasapas.jpg" alt="Inspecteur : action Curseur, mode Pas à pas, 10 crans"><figcaption>Mode « Pas à pas » : nombre de crans, action « Vers le haut / la droite ».</figcaption></figure>
+<figure class="shot-fig"><img class="shot" src="/public/docs-img/action-curseur-position.jpg" alt="Inspecteur : Curseur, mode Position (MSFS), Manette des gaz, 0 à 16383, suivre la position"><figcaption>Mode « Position (MSFS) » : commande « Manette des gaz », bornes 0–16383, suivi de la position réelle.</figcaption></figure>
 <ul>
   <li><b>Vertical</b> si la touche est plus haute que large (fusionnez-la en 1×3 pour un vrai levier), <b>horizontal</b> sinon.</li>
   <li>Mode <b>Position (MSFS)</b> : la position est envoyée en continu au simulateur (par exemple <code>THROTTLE_SET</code> de 0 à 16383) et le curseur suit le levier si vous le bougez dans le cockpit.</li>
@@ -229,6 +249,7 @@
 </ul>
 
 <h3 id="a-afficheur">Afficheur</h3>
+<figure class="shot-fig"><img class="shot" src="/public/docs-img/action-afficheur.jpg" alt="Inspecteur : action Afficheur, source SimHub dcp.gd.SpeedKmh, suffixe km/h"><figcaption>Source SimHub <code>dcp.gd.SpeedKmh</code>, avec suffixe, décimales et facteur.</figcaption></figure>
 <p>Une touche qui affiche en grand une valeur en direct (vitesse, rapport engagé, temps au tour, altitude…), avec un titre en dessous. La valeur vient de <b>MSFS</b> (SimVar, variable <code>L:</code>, Input Event) ou de <b>SimHub</b> (propriété). Options : suffixe (<code>km/h</code>), décimales, facteur (échelle), zéros devant, signe, format « temps au tour » (<code>1:23.456</code>). Un appui peut aussi déclencher une action.</p>
 
 <h2 id="jeux">4. Assetto Corsa, Le Mans Ultimate et les jeux de course</h2>
@@ -283,6 +304,7 @@
 <p>Le menu propose une cinquantaine de commandes standard (train, volets, aérofreins, compensateur, feux, pilote automatique, radios, pause…) classées par groupes, plus les commandes d'un A320 FlyByWire. Pour tout autre événement, choisissez <i>Avancé → Autre événement (saisie libre)</i> et tapez son nom (la casse est normalisée en majuscules). La liste complète des événements standard est dans la documentation du SDK MSFS (« Event IDs »). <b>Valeur</b> sert aux événements qui attendent un paramètre : <code>HEADING_BUG_SET</code> avec 270 fixe le cap sélecté à 270°.</p>
 
 <h3 id="msfs-variable">Mode Variable</h3>
+<figure class="shot-fig"><img class="shot" src="/public/docs-img/action-msfs-variable.jpg" alt="Inspecteur : Commande MSFS, mode Variable, L:AZP_RAF_AT_MODE, opération Basculer"><figcaption>Exemple : <code>L:AZP_RAF_AT_MODE</code>, opération « Basculer » (valeurs allumé/éteint).</figcaption></figure>
 <p>Nom de la variable + <b>unité</b> + opération :</p>
 <ul>
   <li><b>Fixer</b> : écrit une valeur ;</li>
@@ -298,6 +320,7 @@
 <p><b>Attention :</b> écrire une variable <code>L:</code> ne commande pas toujours l'avion. Si l'avion ne fait que <i>lire</i> la variable pour animer un interrupteur (cas fréquent au Rafale), la valeur change mais la fonction n'est pas déclenchée : il faut alors le mode <b>Code</b> avec l'événement <code>H:</code>.</p>
 
 <h3 id="msfs-input">Mode Input Event</h3>
+<figure class="shot-fig"><img class="shot" src="/public/docs-img/action-msfs-inputevent.jpg" alt="Inspecteur : Commande MSFS, mode Input Event, LIGHTING_LANDING_1, opération Fixer"><figcaption>Exemple : <code>LIGHTING_LANDING_1</code>, opération « Fixer ».</figcaption></figure>
 <p>Les Input Events sont les commandes de cockpit que l'avion expose à MSFS 2024. Le champ propose la liste de ceux de <b>l'avion chargé</b> (bouton ◎ pour parcourir). Ils se manipulent comme une variable : Fixer, Basculer, Ajouter. Les Input Events peuvent aussi <i>être lus</i> pour alimenter une bascule ou un afficheur.</p>
 
 <h3 id="msfs-explorateur">L'explorateur MSFS : trouver et tester</h3>
@@ -396,6 +419,7 @@
   <li>La pastille <b>SimHub</b> de l'écran de configuration passe au vert. StreamSim se connecte à <code>127.0.0.1:18082</code> et se reconnecte tout seul si SimHub est relancé (autre PC ou autre port : variables <code>SIMHUB_HOST</code> et <code>SIMHUB_PORT</code>).</li>
 </ol>
 <p>Ce que SimHub permet :</p>
+<figure class="shot-fig"><img class="shot" src="/public/docs-img/action-simhub.jpg" alt="Inspecteur : action Commande SimHub, nom deck.dash, déclenchement appui bref"><figcaption>Exemple : « Commande SimHub » nommée <code>deck.dash</code>.</figcaption></figure>
 <ul>
   <li><b>Afficheurs</b> : la propriété à afficher s'écrit <code>dcp.gd.X</code> (pour <code>DataCorePlugin.GameData.X</code>, par exemple <code>dcp.gd.SpeedKmh</code>) ou avec son nom complet copié dans <i>Available properties</i> de SimHub. Le bouton ◎ charge la liste des propriétés connues. Mise à jour en direct (10 fois par seconde au plus).</li>
   <li><b>Bascules synchronisées</b> : l'état de la touche suit une propriété SimHub (limiteur de stand, contact, DRS…). L'action reste au choix, par exemple la touche du jeu.</li>
