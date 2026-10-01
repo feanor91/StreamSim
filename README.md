@@ -182,12 +182,16 @@ Raccourcis clavier : flèches pour se déplacer, `Suppr` pour effacer,
 
 ### Types d'action
 
-<img src="docs/screenshots/action-raccourci.jpg" alt="Inspecteur : action Raccourci clavier, exemple Ctrl+C, avec le logiciel cible" width="420" align="right">
-
 Dans l'inspecteur, section **Action**, cliquez sur le type voulu (Raccourci,
-Texte, MSFS…) : ses réglages apparaissent juste en dessous. Exemple ci-contre
-avec un raccourci `Ctrl + C` capturé au clavier (bouton « Cliquez ici puis
-appuyez sur le raccourci »), et le choix du **logiciel cible**.
+Texte, MSFS…) : ses réglages apparaissent juste en dessous, et le titre/l'icône
+sont conservés en changeant de type.
+
+<p align="center">
+  <img src="docs/screenshots/action-raccourci-1.png" alt="Inspecteur : type Raccourci sélectionné, raccourci Ctrl+F capturé" height="320">
+  <img src="docs/screenshots/action-raccourci-2.png" alt="Mode jeu, Répéter, Logiciel cible" height="320">
+  <img src="docs/screenshots/action-raccourci-3.png" alt="Couleur de fond et Taille (touches fusionnées)" height="320">
+</p>
+<p align="center"><sub>Exemple « Raccourci clavier » : le type et le raccourci capturé (<code>Ctrl + F</code>), Mode jeu / Répéter / Logiciel cible, puis Couleur et Taille — ces deux derniers réglages sont communs à tous les types d'action.</sub></p>
 
 | Action | Description |
 | --- | --- |
@@ -205,6 +209,24 @@ appuyez sur le raccourci »), et le choix du **logiciel cible**.
 | Bouton rotatif | Tourner (glisser le doigt) pour « + » / « − », appuyer pour valider ; peut afficher une valeur du simulateur |
 | Curseur | Glisser pour régler une position (gaz, volets…) ou envoyer des crans « + » / « − » |
 | Bascule (2 états) | Alterne entre deux états (ex. train rentré / sorti) : titre, icône, couleur et action propres à chaque état |
+
+<p align="center">
+  <img src="docs/screenshots/action-texte.jpg" alt="Inspecteur : action Texte, « Cordialement, » saisi" height="260">
+  <img src="docs/screenshots/action-multimedia.jpg" alt="Inspecteur : action Multimédia, Lecture / Pause" height="260">
+  <img src="docs/screenshots/action-application.jpg" alt="Inspecteur : action Application, obs64.exe" height="260">
+</p>
+<p align="center">
+  <img src="docs/screenshots/action-siteweb.jpg" alt="Inspecteur : action Site web, youtube.com" height="260">
+  <img src="docs/screenshots/action-commande.jpg" alt="Inspecteur : action Commande système, avertissement de sécurité" height="260">
+  <img src="docs/screenshots/action-page.jpg" alt="Inspecteur : action Page, destination Rafale" height="260">
+</p>
+<p align="center"><sub>Texte, Multimédia, Application, Site web, Commande système, Page.</sub></p>
+
+<p align="center">
+  <img src="docs/screenshots/action-multi-1.jpg" alt="Inspecteur : Multi-actions, étape 1 Commande MSFS Train d'atterrissage" height="320">
+  <img src="docs/screenshots/action-multi-2.jpg" alt="Inspecteur : Multi-actions, étape 2 Pause 300 ms puis étape 3" height="320">
+</p>
+<p align="center"><sub>Multi-actions : commande MSFS, pause 300 ms, puis une autre commande — réordonnables avec les flèches.</sub></p>
 
 #### Jeux et simulateurs (Assetto Corsa, Le Mans Ultimate…)
 
@@ -228,6 +250,11 @@ Si ça ne suffit pas :
   la fonction de macros ou de boutons du jeu lui-même, ou un périphérique matériel.
 
 ### Touches à bascule
+
+<p align="center">
+  <img src="docs/screenshots/action-bascule-1.jpg" alt="Inspecteur : action Bascule, même action pour les deux états, raccourci G" height="320">
+  <img src="docs/screenshots/action-bascule-2.jpg" alt="Inspecteur : Bascule, état lu dans le simulateur, bouton Changer d'état, onglets État 1 / État 2" height="320">
+</p>
 
 Une bascule a deux états, chacun avec son titre, son icône, sa couleur et
 l'action à envoyer (ou la même action pour les deux, ex. la touche `G` du train
@@ -266,12 +293,15 @@ L'onglet *Aviation* du choix d'icône propose 36 icônes dédiées, par groupes.
 
 #### Trois façons d'agir sur le simulateur
 
-<img src="docs/screenshots/action-msfs-commande.jpg" alt="Inspecteur : action Commande MSFS, exemple avec la commande « Train d'atterrissage (basculer) » choisie" width="420" align="right">
-
 L'action « Commande MSFS » propose trois modes, en onglets sous le type
-d'action (*Commande*, *Variable*, *Input Event*, *Code*). Le mode *Commande*
-(ci-contre) ouvre un menu déroulant classé par catégorie — tapez pour
-rechercher, ou choisissez un événement personnalisé :
+d'action (*Commande*, *Variable*, *Input Event*, *Code*) :
+
+<p align="center">
+  <img src="docs/screenshots/action-msfs-commande.jpg" alt="Inspecteur : action Commande MSFS, exemple avec la commande « Train d'atterrissage (basculer) » choisie" height="320">
+  <img src="docs/screenshots/action-msfs-variable.jpg" alt="Inspecteur : Commande MSFS, mode Variable, L:AZP_RAF_AT_MODE, opération Basculer" height="320">
+  <img src="docs/screenshots/action-msfs-inputevent.jpg" alt="Inspecteur : Commande MSFS, mode Input Event, LIGHTING_LANDING_1, opération Fixer" height="320">
+</p>
+<p align="center"><sub>Mode <i>Commande</i> (menu classé par catégorie, ici « Train d'atterrissage »), mode <i>Variable</i> (<code>L:AZP_RAF_AT_MODE</code>, Basculer), mode <i>Input Event</i> (<code>LIGHTING_LANDING_1</code>, Fixer).</sub></p>
 
 | Mode | Pour quoi | Exemple |
 | --- | --- | --- |
@@ -327,7 +357,7 @@ et de luminosité des écrans (de 0 à 100 %, ± 5 % par cran). AzurPoly ne docu
 l'écriture de ces variables : si une touche n'a pas d'effet dans le cockpit, c'est
 que l'avion ne fait que lire cette variable pour son affichage.
 
-<img src="docs/screenshots/action-msfs-code-wasm.jpg" alt="Inspecteur : action Commande MSFS, mode Code, avec un exemple de code avionique MobiFlight WASM" width="420" align="right">
+<img src="docs/screenshots/action-msfs-code-wasm.jpg" alt="Inspecteur : action Commande MSFS, mode Code, avec un exemple de code avionique MobiFlight WASM" height="380" align="right">
 
 **Code avionique (événements `H:` et `B:`).** Beaucoup d'interrupteurs du Rafale
 ne changent qu'une variable `L:` pour leur animation : la vraie fonction passe par
@@ -383,6 +413,11 @@ gratuit **SimHub Property Server** ([pre-martin/SimHubPropertyServer](https://gi
 
 Ce que l'on peut faire :
 
+<p align="center">
+  <img src="docs/screenshots/action-afficheur.jpg" alt="Inspecteur : action Afficheur, source SimHub dcp.gd.SpeedKmh, suffixe km/h" height="320">
+  <img src="docs/screenshots/action-simhub.jpg" alt="Inspecteur : action Commande SimHub, nom deck.dash, déclenchement" height="320">
+</p>
+
 - **Afficheurs** (groupe *SimHub* de la bibliothèque) : vitesse, rapport, régime,
   carburant, position, tours, tour en cours, dernier et meilleur tour, niveaux
   d'antipatinage et d'ABS, répartition de freinage… La valeur se met à jour en
@@ -404,7 +439,7 @@ Ce que l'on peut faire :
 
 ### Boutons rotatifs et curseurs
 
-<img src="docs/screenshots/action-rotatif.jpg" alt="Inspecteur : action Bouton rotatif, avec le raccourci de Tourner + (Droite) et Tourner - (Gauche)" width="420" align="right">
+<img src="docs/screenshots/action-rotatif.jpg" alt="Inspecteur : action Bouton rotatif, avec le raccourci de Tourner + (Droite) et Tourner - (Gauche)" height="380" align="right">
 
 **Bouton rotatif** (catégorie *Avancé*, ou préréglages MSFS HDG, ALT, VS, SPD,
 CRS, BARO, molette de compensateur) : l'inspecteur demande une action pour
@@ -422,6 +457,12 @@ Gauche) — n'importe quel type d'action convient, pas seulement les raccourcis.
 
 **Curseur** (préréglages MSFS : manette des gaz, volets, aérofreins, mélange,
 pas d'hélice) :
+
+<p align="center">
+  <img src="docs/screenshots/action-curseur-pasapas.jpg" alt="Inspecteur : action Curseur, mode Pas à pas, 10 crans" height="320">
+  <img src="docs/screenshots/action-curseur-position.jpg" alt="Inspecteur : Curseur, mode Position (MSFS), Manette des gaz, 0 à 16383" height="320">
+</p>
+<p align="center"><sub>Mode <i>Pas à pas</i> (nombre de crans réglable) et mode <i>Position (MSFS)</i> (ici « Manette des gaz », 0–16383, suivi de la position réelle).</sub></p>
 
 - vertical si la touche est plus haute que large : fusionnez-la en 1×3 pour
   obtenir un vrai levier ; horizontal sinon ;
