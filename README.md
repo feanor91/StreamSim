@@ -266,7 +266,7 @@ L'onglet *Aviation* du choix d'icône propose 36 icônes dédiées, par groupes.
 
 #### Trois façons d'agir sur le simulateur
 
-<img src="docs/screenshots/action-msfs-commande.jpg" alt="Inspecteur : action Commande MSFS, menu déroulant des commandes classées par catégorie (Train & freins, Volets & compensation, Feux…)" width="420" align="right">
+<img src="docs/screenshots/action-msfs-commande.jpg" alt="Inspecteur : action Commande MSFS, exemple avec la commande « Train d'atterrissage (basculer) » choisie" width="420" align="right">
 
 L'action « Commande MSFS » propose trois modes, en onglets sous le type
 d'action (*Commande*, *Variable*, *Input Event*, *Code*). Le mode *Commande*
