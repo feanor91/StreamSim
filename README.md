@@ -59,6 +59,8 @@ publication sont créées automatiquement.
 
 ### Sur Android
 
+<img src="docs/screenshots/deck.jpg" alt="Le Deck en plein écran, avec les touches du profil Microsoft Flight Simulator" width="700">
+
 1. Copiez l'APK sur le téléphone et ouvrez-le (autorisez l'installation
    d'applications de sources inconnues si Android le demande).
 2. Ouvrez **StreamSim** : le PC apparaît dans « Sur ce réseau ». Touchez-le.
@@ -125,6 +127,8 @@ versions publiées. La mise à jour automatique d'Android fonctionne à partir d
 
 ## Interface de configuration
 
+<img src="docs/screenshots/interface-configuration.jpg" alt="Interface de configuration : bibliothèque d'actions à gauche, grille de touches au centre, inspecteur à droite" width="900">
+
 - **Bibliothèque d'actions** (à gauche) : glissez une action sur une touche, ou
   cliquez dessus pour l'appliquer à la touche sélectionnée. Les groupes sont
   repliés par défaut : cliquez sur un titre pour le déplier (l'état est mémorisé).
@@ -177,6 +181,13 @@ Raccourcis clavier : flèches pour se déplacer, `Suppr` pour effacer,
 `Ctrl+C` / `Ctrl+V` pour copier-coller, `Ctrl+D` pour dupliquer, `Échap` pour désélectionner.
 
 ### Types d'action
+
+<img src="docs/screenshots/action-raccourci.jpg" alt="Inspecteur : action Raccourci clavier, exemple Ctrl+C, avec le logiciel cible" width="340" align="right">
+
+Dans l'inspecteur, section **Action**, cliquez sur le type voulu (Raccourci,
+Texte, MSFS…) : ses réglages apparaissent juste en dessous. Exemple ci-contre
+avec un raccourci `Ctrl + C` capturé au clavier (bouton « Cliquez ici puis
+appuyez sur le raccourci »), et le choix du **logiciel cible**.
 
 | Action | Description |
 | --- | --- |
@@ -255,7 +266,12 @@ L'onglet *Aviation* du choix d'icône propose 36 icônes dédiées, par groupes.
 
 #### Trois façons d'agir sur le simulateur
 
-L'action « Commande MSFS » propose trois modes :
+<img src="docs/screenshots/action-msfs-commande.jpg" alt="Inspecteur : action Commande MSFS, menu déroulant des commandes classées par catégorie (Train & freins, Volets & compensation, Feux…)" width="340" align="right">
+
+L'action « Commande MSFS » propose trois modes, en onglets sous le type
+d'action (*Commande*, *Variable*, *Input Event*, *Code*). Le mode *Commande*
+(ci-contre) ouvre un menu déroulant classé par catégorie — tapez pour
+rechercher, ou choisissez un événement personnalisé :
 
 | Mode | Pour quoi | Exemple |
 | --- | --- | --- |
@@ -292,6 +308,8 @@ FlyByWire, sans module supplémentaire :
 
 #### Rafale (AzurPoly, MSFS 2024)
 
+<img src="docs/screenshots/deck-rafale.jpg" alt="Le Deck sur la page Rafale : boutons rotatifs (VISU G/D, MFK…) et commandes de cockpit" width="700">
+
 Catégorie *Rafale (AzurPoly)*, construite à partir des Input Events exposés par
 l'avion (liste exportée depuis l'explorateur). Chaque touche lit l'état réel dans
 le simulateur :
@@ -308,6 +326,8 @@ coupure de la direction de roue avant, crosse de secours, tablette EFB ; molette
 et de luminosité des écrans (de 0 à 100 %, ± 5 % par cran). AzurPoly ne documente pas
 l'écriture de ces variables : si une touche n'a pas d'effet dans le cockpit, c'est
 que l'avion ne fait que lire cette variable pour son affichage.
+
+<img src="docs/screenshots/action-msfs-code-wasm.jpg" alt="Inspecteur : action Commande MSFS, mode Code, avec un exemple de code avionique MobiFlight WASM" width="340" align="right">
 
 **Code avionique (événements `H:` et `B:`).** Beaucoup d'interrupteurs du Rafale
 ne changent qu'une variable `L:` pour leur animation : la vraie fonction passe par
@@ -384,8 +404,12 @@ Ce que l'on peut faire :
 
 ### Boutons rotatifs et curseurs
 
+<img src="docs/screenshots/action-rotatif.jpg" alt="Inspecteur : action Bouton rotatif, avec le raccourci de Tourner + (Droite) et Tourner - (Gauche)" width="340" align="right">
+
 **Bouton rotatif** (catégorie *Avancé*, ou préréglages MSFS HDG, ALT, VS, SPD,
-CRS, BARO, molette de compensateur) :
+CRS, BARO, molette de compensateur) : l'inspecteur demande une action pour
+« Tourner + » et une pour « Tourner − » (ici deux raccourcis clavier, Droite et
+Gauche) — n'importe quel type d'action convient, pas seulement les raccourcis.
 
 - sur le Deck, glissez le doigt vers la droite ou vers le haut pour « + », vers
   la gauche ou vers le bas pour « − » ; chaque cran envoie l'action correspondante
