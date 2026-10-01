@@ -182,7 +182,7 @@ Raccourcis clavier : flèches pour se déplacer, `Suppr` pour effacer,
 
 ### Types d'action
 
-<img src="docs/screenshots/action-raccourci.jpg" alt="Inspecteur : action Raccourci clavier, exemple Ctrl+C, avec le logiciel cible" width="340" align="right">
+<img src="docs/screenshots/action-raccourci.jpg" alt="Inspecteur : action Raccourci clavier, exemple Ctrl+C, avec le logiciel cible" width="420" align="right">
 
 Dans l'inspecteur, section **Action**, cliquez sur le type voulu (Raccourci,
 Texte, MSFS…) : ses réglages apparaissent juste en dessous. Exemple ci-contre
@@ -266,7 +266,7 @@ L'onglet *Aviation* du choix d'icône propose 36 icônes dédiées, par groupes.
 
 #### Trois façons d'agir sur le simulateur
 
-<img src="docs/screenshots/action-msfs-commande.jpg" alt="Inspecteur : action Commande MSFS, menu déroulant des commandes classées par catégorie (Train & freins, Volets & compensation, Feux…)" width="340" align="right">
+<img src="docs/screenshots/action-msfs-commande.jpg" alt="Inspecteur : action Commande MSFS, menu déroulant des commandes classées par catégorie (Train & freins, Volets & compensation, Feux…)" width="420" align="right">
 
 L'action « Commande MSFS » propose trois modes, en onglets sous le type
 d'action (*Commande*, *Variable*, *Input Event*, *Code*). Le mode *Commande*
@@ -327,7 +327,7 @@ et de luminosité des écrans (de 0 à 100 %, ± 5 % par cran). AzurPoly ne docu
 l'écriture de ces variables : si une touche n'a pas d'effet dans le cockpit, c'est
 que l'avion ne fait que lire cette variable pour son affichage.
 
-<img src="docs/screenshots/action-msfs-code-wasm.jpg" alt="Inspecteur : action Commande MSFS, mode Code, avec un exemple de code avionique MobiFlight WASM" width="340" align="right">
+<img src="docs/screenshots/action-msfs-code-wasm.jpg" alt="Inspecteur : action Commande MSFS, mode Code, avec un exemple de code avionique MobiFlight WASM" width="420" align="right">
 
 **Code avionique (événements `H:` et `B:`).** Beaucoup d'interrupteurs du Rafale
 ne changent qu'une variable `L:` pour leur animation : la vraie fonction passe par
@@ -404,7 +404,7 @@ Ce que l'on peut faire :
 
 ### Boutons rotatifs et curseurs
 
-<img src="docs/screenshots/action-rotatif.jpg" alt="Inspecteur : action Bouton rotatif, avec le raccourci de Tourner + (Droite) et Tourner - (Gauche)" width="340" align="right">
+<img src="docs/screenshots/action-rotatif.jpg" alt="Inspecteur : action Bouton rotatif, avec le raccourci de Tourner + (Droite) et Tourner - (Gauche)" width="420" align="right">
 
 **Bouton rotatif** (catégorie *Avancé*, ou préréglages MSFS HDG, ALT, VS, SPD,
 CRS, BARO, molette de compensateur) : l'inspecteur demande une action pour
