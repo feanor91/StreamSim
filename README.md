@@ -381,7 +381,9 @@ commandes de la documentation AzurPoly (*Custom variables and events*) :
   éteint / allumé (l'APU suit l'état réel de l'avion ; l'ECS, dont la variable n'est pas relevée, celui de la touche) ;
 - **sélecteur de source électrique 5K** (OFF, TEST, STBY, NORM, START L, START R), en
   touche 2 × 2 dont le visuel suit la position réelle du sélecteur dans l'avion ;
-- acquittement des alarmes, **largage d'urgence**, rechargement du canon.
+- acquittement des alarmes, **largage d'urgence**, rechargement du canon ;
+- **sécurité des générateurs (GEN SAFETY)** ;
+- **FCS TEST** : capot de protection (la touche suit son état) et test court, utilisable capot ouvert.
 
 Le Rafale n'expose pas ses systèmes de cockpit (armement, écrans, pilote
 automatique…) sous forme d'Input Events : ils passent par ses variables `L:`.

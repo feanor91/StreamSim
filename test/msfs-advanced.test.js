@@ -179,6 +179,13 @@ test('Rafale : préréglages et nom de l’avion (MSFS 2024)', async () => {
   assert.equal(k5.action.display.simvar, 'L:AZP_RAF_ELECTRICAL_MAIN_SOURCE_KNOB_ANIM');
   assert.equal(k5.action.display.values.length, 6);
   assert.equal(RAFALE_COCKPIT_PRESETS.find((p) => p.face.title === 'APU').action.sync.simvar, 'APU SWITCH');
+  // FCS TEST : capot (même code que l'avion) puis test court, uniquement capot ouvert.
+  const hood = RAFALE_COCKPIT_PRESETS.find((p) => p.label.startsWith('FCS TEST : capot')).action;
+  assert.equal(hood.sync.simvar, 'L:AZP_RAF_HANDLING_FCS_TEST_SWITCH_HOOD');
+  assert.equal(hood.actions[0].code, '(L:AZP_RAF_HANDLING_FCS_TEST_MODE, Enum) 0 == if{ (L:AZP_RAF_HANDLING_FCS_TEST_SWITCH_HOOD, Bool) ! (>L:AZP_RAF_HANDLING_FCS_TEST_SWITCH_HOOD, Bool) }');
+  const fcs = RAFALE_COCKPIT_PRESETS.find((p) => p.label.startsWith('FCS TEST : test court')).action;
+  assert.match(fcs.steps[0].code, /FCS_TEST_SWITCH_HOOD, Bool\) if\{ 1 \(>L:AZP_RAF_HANDLING_FCS_TEST_MODE, Enum\)/);
+  assert.equal(fcs.steps[2].code, '0 (>L:AZP_RAF_HANDLING_FCS_TEST_MODE, Enum)');
   const aec = RAFALE_COCKPIT_PRESETS.find((p) => p.label.includes('auxiliaire gauche')).action;
   assert.equal(aec.inc.code, '(L:AZP_RAF_ENGINE_AUXILIARY_LEVER_POS:1, Number) 1 + 3 min (>L:AZP_RAF_ENGINE_AUXILIARY_LEVER_POS:1, Number)');
   assert.equal(aec.dec.code, '(L:AZP_RAF_ENGINE_AUXILIARY_LEVER_POS:1, Number) 1 - 0 max (>L:AZP_RAF_ENGINE_AUXILIARY_LEVER_POS:1, Number)');
