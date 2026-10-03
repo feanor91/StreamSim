@@ -28,6 +28,13 @@ let trayHintShown = false;
 let updater = null;
 let log = console;
 
+// Réglages mémoire : l'interface est légère (HTML/CSS), pas besoin d'accélération GPU,
+// d'un processus de rendu de réserve ni d'un tas JavaScript généreux.
+app.disableHardwareAcceleration();
+app.commandLine.appendSwitch('disable-features', 'SpareRendererForSitePerProcess,CalculateNativeWinOcclusion');
+app.commandLine.appendSwitch('renderer-process-limit', '2');
+app.commandLine.appendSwitch('js-flags', '--max-old-space-size=256 --max-semi-space-size=1');
+
 if (!app.requestSingleInstanceLock()) {
   app.quit();
 } else {
@@ -133,7 +140,7 @@ function showMain() {
     backgroundColor: '#0a0b10',
     autoHideMenuBar: true,
     show: false,
-    webPreferences: { contextIsolation: true, sandbox: true },
+    webPreferences: { contextIsolation: true, sandbox: true, spellcheck: false },
   });
   mainWindow.setMenuBarVisibility(false);
   mainWindow.once('ready-to-show', () => mainWindow.show());
@@ -145,10 +152,10 @@ function showMain() {
   mainWindow.webContents.on('did-fail-load', (_e, code) => {
     if (code !== -3) setTimeout(() => mainWindow?.loadURL(`http://localhost:${PORT}/`), 1000);
   });
-  mainWindow.on('close', (e) => {
+  // Fermer la fenêtre la détruit (et libère son processus de rendu, ~60 Mo) ; le serveur reste
+  // actif dans la zone de notification et la fenêtre est recréée à la demande.
+  mainWindow.on('close', () => {
     if (quitting) return;
-    e.preventDefault();
-    mainWindow.hide();
     if (!trayHintShown && Notification.isSupported()) {
       trayHintShown = true;
       new Notification({
@@ -172,7 +179,7 @@ function showDeckPreview() {
     icon: ICON,
     backgroundColor: '#000000',
     autoHideMenuBar: true,
-    webPreferences: { contextIsolation: true, sandbox: true },
+    webPreferences: { contextIsolation: true, sandbox: true, spellcheck: false },
   });
   deckWindow.setMenuBarVisibility(false);
   deckWindow.on('closed', () => (deckWindow = null));
