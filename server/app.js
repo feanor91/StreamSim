@@ -265,8 +265,25 @@ export async function startDeckServer({
     onValue: applySimhub,
   });
 
+  // Les liaisons MSFS et SimHub ne démarrent (connexion, sondage, module node-simconnect) que
+  // si une touche les utilise : action « msfs » / « simhub » ou liaison d'état.
+  const started = { msfs: false, simhub: false };
+  const ensureMsfs = () => {
+    if (!msfsEnabled || started.msfs) return;
+    started.msfs = true;
+    msfs.start();
+  };
+  const ensureSimhub = () => {
+    if (!simhubEnabled || started.simhub) return;
+    started.simhub = true;
+    simhub.start();
+  };
+  const usesAction = (kind) => JSON.stringify(store.config?.profiles ?? []).includes(`"type":"${kind}"`);
+
   function refreshSimWatch() {
     const bindings = simBindings();
+    if (bindings.some((b) => !b.simhub) || usesAction('msfs')) ensureMsfs();
+    if (bindings.some((b) => b.simhub) || usesAction('simhub')) ensureSimhub();
     const fromMsfs = bindings.filter((b) => !b.simhub);
     msfs.watch(fromMsfs.map((b) => (b.input ? { input: b.input } : { simvar: b.simvar, unit: b.unit })));
     simhub.watch(bindings.filter((b) => b.simhub).map((b) => b.simhub));
@@ -322,7 +339,17 @@ export async function startDeckServer({
     }
     throw httpError('Geste non pris en charge par cette touche.', 400);
   }
-  const ctx = { msfs, simhub };
+  // Une action ou l'explorateur qui sollicite une liaison la démarre si ce n'est pas déjà fait.
+  const ctx = {
+    get msfs() {
+      ensureMsfs();
+      return msfs;
+    },
+    get simhub() {
+      ensureSimhub();
+      return simhub;
+    },
+  };
 
   const updater = customUpdater ?? createReleaseChecker({ current: VERSION, log, auto: updateCheck });
   const stopUpdateEvents = updater.onChange((u) => broadcast('update', u));
@@ -554,6 +581,7 @@ export async function startDeckServer({
       case 'GET /api/msfs/inputs': {
         requireAdmin(req);
         const refresh = new URL(req.url, 'http://x').searchParams.has('refresh');
+        ensureMsfs();
         try {
           const inputs = await msfs.inputEvents(refresh);
           return send(res, 200, { aircraft: msfs.status.aircraft, inputs });
@@ -565,6 +593,7 @@ export async function startDeckServer({
       case 'POST /api/msfs/read': {
         requireAdmin(req);
         const body = await readJson(req);
+        ensureMsfs();
         try {
           const value = body.input ? await msfs.readInput(body.input) : await msfs.readVar(body.var, body.unit || 'number');
           return send(res, 200, { value });
@@ -576,6 +605,7 @@ export async function startDeckServer({
       // Propriétés annoncées par SimHub (commande « help » du Property Server).
       case 'GET /api/simhub/properties': {
         requireAdmin(req);
+        ensureSimhub();
         try {
           return send(res, 200, { properties: await simhub.properties() });
         } catch (e) {
@@ -655,8 +685,6 @@ export async function startDeckServer({
   });
 
   const disco = discovery ? startDiscovery({ port, version: VERSION, log }) : null;
-  if (msfsEnabled) msfs.start();
-  if (simhubEnabled) simhub.start();
 
   const ready = executor.check().then((s) => {
     executorStatus = s;

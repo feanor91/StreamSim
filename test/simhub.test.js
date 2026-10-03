@@ -48,7 +48,7 @@ test('serveur : afficheurs, bascule synchronisée et commandes SimHub', async ()
   const post = (p, data) =>
     fetch(url + p, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) }).then((r) => r.json());
   try {
-    assert.ok(await until(async () => (await fetch(`${url}/api/status`).then((r) => r.json())).simhub.connected));
+    // La liaison ne démarre que lorsqu'une touche l'utilise : rien à faire sans configuration.
     const { config } = await get();
     const pg = config.profiles[0].pages[0];
     pg.keys[10] = { title: 'Rapport', action: { type: 'display', display: { simhub: 'dcp.gd.Gear' } } };
@@ -56,6 +56,7 @@ test('serveur : afficheurs, bascule synchronisée et commandes SimHub', async ()
     pg.keys[12] = { title: 'Écran', action: { type: 'simhub', input: 'deck.screen', mode: 'click' } };
     await fetch(`${url}/api/config`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ config }) });
     const sk = (i) => `default/${pg.id}/${i}`;
+    assert.ok(await until(async () => (await fetch(`${url}/api/status`).then((r) => r.json())).simhub.connected));
 
     // Valeur texte affichée telle quelle, puis mise à jour par le jeu.
     assert.ok(await until(async () => (await get()).values[sk(10)] === 'N'));
@@ -94,6 +95,8 @@ test('SimHub absent : statut explicite et commande refusée', async () => {
   const deck = await startDeckServer({ port: 0, host: '127.0.0.1', dataDir, dryRun: true, discovery: false, msfs: false, simhubPort: 1, updateCheck: false, log: quiet });
   const url = `http://127.0.0.1:${deck.port}`;
   try {
+    // Une commande SimHub démarre la liaison à la demande.
+    await fetch(`${url}/api/test`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: { type: 'simhub', input: 'x' } }) });
     assert.ok(await until(async () => /non détecté/.test((await fetch(`${url}/api/status`).then((r) => r.json())).simhub.reason ?? '')));
     const res = await fetch(`${url}/api/test`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: { type: 'simhub', input: 'x' } }) });
     assert.equal(res.status, 422);

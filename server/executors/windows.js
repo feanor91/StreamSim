@@ -8,6 +8,8 @@ const AGENT = path
   .join(path.dirname(fileURLToPath(import.meta.url)), 'windows-agent.ps1')
   .replace(/app\.asar([\\/])/, 'app.asar.unpacked$1');
 
+const IDLE_MS = 5 * 60 * 1000;
+
 // Codes de touches virtuelles Windows : [vk, touche étendue]
 const VK = {
   Enter: [0x0d, false], Escape: [0x1b, false], Tab: [0x09, false], Space: [0x20, false],
@@ -88,6 +90,7 @@ class Agent {
 
   call(op, params = {}, timeout = 10000) {
     this.start();
+    this.touch();
     const id = ++this.seq;
     return new Promise((resolve, reject) => {
       const timer = setTimeout(() => {
@@ -99,7 +102,19 @@ class Agent {
     });
   }
 
+  // PowerShell + code compilé pèsent plusieurs dizaines de Mo : on libère l'agent après une
+  // période sans appel ; il redémarre tout seul (DLL en cache) au prochain appui.
+  touch() {
+    clearTimeout(this.idle);
+    this.idle = setTimeout(() => {
+      if (this.pending.size) return this.touch();
+      this.stop();
+    }, IDLE_MS);
+    this.idle.unref?.();
+  }
+
   stop() {
+    clearTimeout(this.idle);
     this.proc?.kill();
     this.proc = null;
   }

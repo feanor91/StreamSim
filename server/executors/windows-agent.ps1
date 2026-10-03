@@ -6,7 +6,7 @@ $ErrorActionPreference = 'Stop'
 [Console]::OutputEncoding = [System.Text.Encoding]::UTF8
 [Console]::InputEncoding = [System.Text.Encoding]::UTF8
 
-Add-Type -TypeDefinition @'
+$src = @'
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -130,6 +130,23 @@ public static class DeckInput {
     }
 }
 '@
+
+# La compilation C# coûte ~1 s et de la mémoire : on garde la DLL en cache (clé = hash du code)
+# pour que l'agent, arrêté après une période d'inactivité, redémarre presque instantanément.
+$loaded = $false
+try {
+    $sha = [System.Security.Cryptography.SHA256]::Create()
+    $hash = ([BitConverter]::ToString($sha.ComputeHash([Text.Encoding]::UTF8.GetBytes($src))) -replace '-', '').Substring(0, 16)
+    $dll = Join-Path ([IO.Path]::GetTempPath()) "streamsim-input-$hash.dll"
+    if (-not (Test-Path $dll)) {
+        $tmp = "$dll.$PID.tmp"
+        Add-Type -TypeDefinition $src -OutputAssembly $tmp
+        try { Move-Item $tmp $dll -Force } catch { Remove-Item $tmp -ErrorAction SilentlyContinue }
+    }
+    Add-Type -Path $dll
+    $loaded = $true
+} catch { }
+if (-not $loaded) { Add-Type -TypeDefinition $src }
 
 function Find-Window($by, $value) {
     $needle = $value.ToLowerInvariant()
