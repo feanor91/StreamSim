@@ -5,7 +5,7 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
 // Types d'action exécutés côté serveur. Les actions de navigation ("page")
 // sont gérées par la surface Deck elle-même.
-export const SERVER_ACTIONS = ['hotkey', 'text', 'media', 'launch', 'url', 'command', 'multi', 'delay', 'toggle', 'msfs', 'simhub', 'dial', 'slider', 'display'];
+export const SERVER_ACTIONS = ['hotkey', 'text', 'media', 'launch', 'url', 'command', 'multi', 'delay', 'toggle', 'msfs', 'simhub', 'dial', 'slider', 'display', 'switch'];
 
 /**
  * Touche à bascule : action envoyée selon l'état courant (0 = état 1, 1 = état 2).
@@ -119,6 +119,12 @@ export async function runAction(executor, action, depth = 0, ctx = {}) {
       const inner = toggleAction(action, action.testState ?? 0);
       if (!inner?.type) throw new Error('Aucune action définie pour cet état de la bascule.');
       if (inner.type === 'toggle') throw new Error('Une bascule ne peut pas en contenir une autre.');
+      return runAction(executor, inner, depth + 1, ctx);
+    }
+    case 'switch': {
+      // Bouton « Tester » : envoie l'action de la position demandée (la première par défaut).
+      const inner = action.positions?.[action.testPos ?? 0];
+      if (!inner?.type) throw new Error('Aucune action définie pour cette position.');
       return runAction(executor, inner, depth + 1, ctx);
     }
     case 'dial':

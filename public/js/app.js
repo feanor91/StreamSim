@@ -7,6 +7,7 @@ import {
 } from './catalog.js';
 import { computeCells, placementError, findFreeSlot, keySpan, stateKey } from '/shared/layout.js';
 import { SIMHUB_PROPERTIES } from '/shared/simhub.js';
+import { switchCount } from '/shared/controls.js';
 import { AVIATION_ICON_GROUPS, aviationIcon, SWITCH_FACE_GROUPS, switchFaces } from '/shared/icons.js';
 import { library, refreshIcons, uploadIconFile, openIconLibrary, exportIcons, pickAndImportIcons } from './icons.js';
 import { MSFS_EVENTS, MSFS_EVENT_LABELS, MSFS_SIMVARS, MSFS_NUMERIC_SIMVARS, MSFS_UNITS, FBW_EVENTS, FBW_PRESETS, isLocalVar } from '/shared/msfs.js';
@@ -772,6 +773,8 @@ function actionFields(getAction, tag) {
       return [multiEditor(getAction, tag)];
     case 'toggle':
       return [toggleEditor(getAction, tag)];
+    case 'switch':
+      return [switchEditor(getAction, tag)];
     case 'msfs':
       return msfsFields(getAction, tag);
     case 'simhub':
@@ -1710,6 +1713,110 @@ function sizeField(i) {
 const INNER_TYPES = ['msfs', 'simhub', 'hotkey', 'text', 'media', 'launch', 'url', 'command', 'multi'];
 
 // Éditeur d'une touche à bascule : une action par état (ou la même pour les deux).
+// Interrupteur à N positions : une action par position, lecture facultative de la position réelle.
+function switchEditor(getAction, tag) {
+  const a = getAction();
+  const n = switchCount(a);
+  const SRC = ['simvar', 'input', 'simhub'];
+  // La liste des positions suit le nombre choisi (les actions déjà saisies sont conservées).
+  if (!Array.isArray(a.positions)) a.positions = [];
+  while (a.positions.length < n) a.positions.push(ACTION_TYPES.hotkey.create());
+  a.positions.length = n;
+  const d = a.display ?? {};
+  const synced = SRC.some((k) => k in d);
+  const matching = SWITCH_FACE_GROUPS.filter((g) => g.positions.length === n);
+  const mode = a.mode === 'cycle' ? 'cycle' : 'bounce';
+  const setCount = (v) =>
+    commit(() => {
+      const c = switchCount({ count: v });
+      const act = getAction();
+      act.count = c;
+      while (act.positions.length < c) act.positions.push(ACTION_TYPES.hotkey.create());
+      act.positions.length = c;
+      if (Array.isArray(act.display?.images)) act.display.images.length = Math.min(act.display.images.length, c);
+      if (Array.isArray(act.display?.values) && act.display.values.length !== c) delete act.display.values;
+    });
+  const posKey = h('input', { type: 'text', placeholder: 'ex. AZP_RAF_SELECTOR (variable L: MobiFlight)' });
+  const fillFromVar = () => {
+    const raw = posKey.value.trim();
+    if (!raw) return toast('Saisissez le nom de la variable.', 'err');
+    const name = /^[A-Za-z]:/.test(raw) ? raw : `L:${raw}`;
+    commit(() => {
+      const act = getAction();
+      act.positions = Array.from({ length: switchCount(act) }, (_, i) => ({ type: 'msfs', kind: 'var', var: name, unit: 'number', op: 'set', value: i }));
+      act.display = { ...(act.display ?? {}), simvar: name, unit: 'number' };
+      delete act.display.input;
+      delete act.display.simhub;
+      delete act.display.values;
+    });
+  };
+  return h(
+    'div',
+    { class: 'field' },
+    h('div', { class: 'note info' }, icon('info'),
+      h('span', {}, 'Chaque appui envoie l’action de la position suivante : en aller-retour (haut → milieu → bas → milieu…) ou en boucle (1 → 2 → 3 → 1…). Si vous liez une valeur du simulateur, la touche suit la position réelle de l’interrupteur, même s’il est manœuvré dans le cockpit.')),
+    h('div', { class: 'row' },
+      h('label', { class: 'field' }, h('span', {}, 'Nombre de positions (2 à 12)'),
+        h('input', { type: 'number', min: 2, max: 12, value: n, oninput: (e) => e.target.value !== '' && setCount(e.target.value) })),
+      h('div', { class: 'field' }, h('span', { class: 'field-label' }, 'Parcours'),
+        h('div', { class: 'segmented' },
+          ...[['bounce', 'Aller-retour'], ['cycle', 'En boucle']].map(([id, label]) =>
+            h('button', { class: mode === id ? 'on' : '', onclick: () => commit(() => (getAction().mode = id)) }, label))))),
+    h('div', { class: 'field' },
+      h('span', { class: 'field-label' }, 'Raccourci : variable L: (MobiFlight)'),
+      h('div', { class: 'row' }, posKey,
+        h('button', { class: 'btn small', style: { flex: 'none' }, onclick: fillFromVar, title: 'Position i : variable = i, et position lue dans la même variable' }, 'Remplir les positions')),
+      h('span', { class: 'hint' }, 'Remplit chaque position avec « variable = 0, 1, 2… » et lit la position dans cette variable. Vous pouvez ensuite modifier chaque position à la main.')),
+    h('div', { class: 'steps' }, ...a.positions.map((_, i) => innerActionCard(`Position ${i + 1}`, () => getAction().positions, i, `${tag}:p${i}`))),
+    h('div', { class: 'field sim-sync' },
+      h('label', { class: 'switch' },
+        h('input', {
+          type: 'checkbox',
+          checked: synced,
+          onchange: (e) => commit(() => {
+            const act = getAction();
+            act.display ??= {};
+            if (e.target.checked) Object.assign(act.display, { simvar: 'L:', unit: 'number' });
+            else for (const k of [...SRC, 'unit', 'values']) delete act.display[k];
+          }),
+        }),
+        'Lire la position dans le simulateur (MSFS, MobiFlight ou SimHub)'),
+      ...(synced
+        ? [
+            ...simSourceFields(() => getAction().display, `${tag}:display`, { unitDefault: 'number' }),
+            h('label', { class: 'field' }, h('span', {}, 'Valeurs lues par position (facultatif)'),
+              h('input', {
+                type: 'text',
+                value: Array.isArray(d.values) ? d.values.join(', ') : '',
+                placeholder: `vide = 0, 1, 2… ; sinon ${n} valeurs, ex. 0, 50, 100`,
+                oninput: (e) => commit(() => {
+                  const vals = e.target.value.split(/[;,]/).map((x) => x.trim()).filter(Boolean).map(Number);
+                  const act = getAction();
+                  if (vals.length === switchCount(act) && vals.every((v) => !Number.isNaN(v))) act.display.values = vals;
+                  else delete act.display.values;
+                }, { tag: `${tag}:values`, render: 'key' }),
+              })),
+          ]
+        : []),
+    ),
+    h('div', { class: 'field' },
+      h('span', { class: 'field-label' }, 'Visuel par position'),
+      matching.length
+        ? h('div', { class: 'row', style: { flexWrap: 'wrap' } },
+            ...matching.map((g) => h('button', {
+              class: 'btn small',
+              onclick: () => commit(() => {
+                const act = getAction();
+                act.display ??= {};
+                act.display.images = switchFaces(g);
+              }),
+            }, g.label)),
+            Array.isArray(d.images) && d.images.length ? h('button', { class: 'btn small danger', onclick: () => commit(() => delete getAction().display.images) }, 'Retirer les visuels') : null)
+        : h('span', { class: 'hint' }, 'Aucun visuel fourni pour ce nombre de positions (3 ou 8 : levier, bascule, glissière, sélecteur rotatif).'),
+      h('span', { class: 'hint' }, 'Sans visuel, la touche affiche son titre et des repères de position.')),
+  );
+}
+
 function toggleEditor(getAction, tag) {
   const a = getAction();
   const i = state.selected;

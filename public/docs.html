@@ -172,6 +172,7 @@
   <tr><td>Page</td><td>Change la page du Deck</td></tr>
   <tr><td><a href="#a-multi">Multi-actions</a></td><td>Enchaîne plusieurs actions, avec des pauses</td></tr>
   <tr><td><a href="#a-bascule">Bascule</a></td><td>Deux états (allumé/éteint), avec un aspect par état</td></tr>
+  <tr><td><a href="#a-interrupteur">Interrupteur à N positions</a></td><td>Interrupteur à 3 positions, sélecteur à 8 positions… : un appui passe à la suivante</td></tr>
   <tr><td><a href="#a-rotatif">Bouton rotatif</a></td><td>Glisser = « + » / « − », appui = valider, avec affichage d'une valeur</td></tr>
   <tr><td><a href="#a-curseur">Curseur</a></td><td>Position réglable (gaz, volets…) ou crans</td></tr>
   <tr><td><a href="#a-afficheur">Afficheur</a></td><td>Valeur en direct d'un simulateur</td></tr>
@@ -225,6 +226,16 @@
   <li>L'état est gardé par le PC : téléphone, tablette et écran de configuration affichent le même.</li>
   <li><b>Synchronisation avec le simulateur</b> : activez l'option d'état lu dans le simulateur et indiquez la variable (MSFS : SimVar, variable <code>L:</code> ou Input Event ; SimHub : propriété). La touche suit alors l'état <i>réel</i>, même si vous agissez à la souris dans le cockpit. « État 2 si la valeur vaut… » permet de n'allumer la touche que pour une valeur précise (auto-freinage sur MED, par exemple) ; une propriété texte peut être comparée à un texte (rapport « R »).</li>
   <li>Sans synchronisation, si l'état se désynchronise, un <b>appui long</b> sur la touche change l'état <i>sans rien envoyer</i> (le bouton « Changer d'état » de l'inspecteur fait pareil).</li>
+</ul>
+
+<h3 id="a-interrupteur">Interrupteur à N positions</h3>
+<p>Pour un interrupteur à <b>trois positions</b> (haut / milieu / bas), un sélecteur à <b>huit positions</b> ou tout autre commutateur de 2 à 12 positions. Chaque position a <b>sa propre action</b> (raccourci, commande MSFS, variable <code>L:</code>, SimHub…) ; à chaque appui, la touche envoie l'action de la position suivante.</p>
+<ul>
+  <li><b>Parcours</b> : <i>Aller-retour</i> (haut → milieu → bas → milieu → haut…) ou <i>En boucle</i> (1 → 2 → 3 → 1…).</li>
+  <li><b>MobiFlight</b> : saisissez la variable <code>L:</code> de l'interrupteur et cliquez sur <i>Remplir les positions</i> : chaque position fixe la variable à 0, 1, 2… et la touche lit sa position dans cette même variable. Vous pouvez ensuite modifier chaque position à la main.</li>
+  <li><b>Position lue dans le simulateur</b> (MSFS, MobiFlight ou SimHub) : la touche suit la position <i>réelle</i>, même si vous manœuvrez l'interrupteur dans le cockpit. Si les valeurs lues ne sont pas 0, 1, 2… (par exemple 0, 50, 100), indiquez-les dans « Valeurs lues par position ».</li>
+  <li><b>Visuel par position</b> : choisissez une série fournie (levier de côté, bascule de face, glissière : 3 positions ; sélecteur rotatif : 8 positions). Sans visuel, la touche affiche son titre et des repères de position.</li>
+  <li>Sans lecture dans le simulateur, la position est gardée par le PC et partagée par tous les appareils.</li>
 </ul>
 
 <h3 id="a-rotatif">Bouton rotatif</h3>
