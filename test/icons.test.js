@@ -141,3 +141,14 @@ test('serveur : icônes de l’utilisateur (envoi, affichage sécurisé, export,
     await fs.rm(dataDir, { recursive: true, force: true });
   }
 });
+
+test('icônes intégrées : visuels des interrupteurs à positions présents', async () => {
+  const { SWITCH_FACE_GROUPS, switchFaces, isFacePath } = await import('../shared/icons.js');
+  assert.deepEqual(SWITCH_FACE_GROUPS.map((g) => g.positions.length), [3, 3, 3, 8]);
+  for (const g of SWITCH_FACE_GROUPS) {
+    for (const p of switchFaces(g)) {
+      assert.ok(isFacePath(p), p);
+      assert.ok(existsSync(path.join(ROOT, p)), p);
+    }
+  }
+});
