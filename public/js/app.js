@@ -1802,9 +1802,10 @@ function switchEditor(getAction, tag) {
     h('div', { class: 'field' },
       h('span', { class: 'field-label' }, 'Visuel par position'),
       matching.length
-        ? h('div', { class: 'row', style: { flexWrap: 'wrap' } },
+        ? h('div', { style: { display: 'grid', gap: '6px' } },
             ...matching.map((g) => h('button', {
               class: 'btn small',
+              style: { justifyContent: 'flex-start', whiteSpace: 'normal', textAlign: 'left' },
               onclick: () => commit(() => {
                 const act = getAction();
                 act.display ??= {};
