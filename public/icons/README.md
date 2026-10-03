@@ -9,6 +9,9 @@ public/icons/
 │   ├── systemes/                    batterie, avionique, dégivrage, ceintures, moteur, carburant
 │   └── radios-et-divers/            radio, altimètre, pause, pushback, porte, caméra, avion
 └── touches-completes/           Visuels de touche entiers (fond, texte et voyant compris)
+    ├── interrupteurs/               visuels d'interrupteurs à positions
+    │   ├── levier-de-cote/ bascule-de-face/ glissiere/   haut, milieu, bas
+    │   └── selecteur-8-positions/   1 à 8
     └── rafale/
         ├── selecteur-5k/            off, test, stby, norm, l, r
         ├── apu/  ecs/               off, on

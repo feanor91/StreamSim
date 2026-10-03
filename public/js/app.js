@@ -7,7 +7,7 @@ import {
 } from './catalog.js';
 import { computeCells, placementError, findFreeSlot, keySpan, stateKey } from '/shared/layout.js';
 import { SIMHUB_PROPERTIES } from '/shared/simhub.js';
-import { AVIATION_ICON_GROUPS, aviationIcon } from '/shared/icons.js';
+import { AVIATION_ICON_GROUPS, aviationIcon, SWITCH_FACE_GROUPS, switchFaces } from '/shared/icons.js';
 import { library, refreshIcons, uploadIconFile, openIconLibrary, exportIcons, pickAndImportIcons } from './icons.js';
 import { MSFS_EVENTS, MSFS_EVENT_LABELS, MSFS_SIMVARS, MSFS_NUMERIC_SIMVARS, MSFS_UNITS, FBW_EVENTS, FBW_PRESETS, isLocalVar } from '/shared/msfs.js';
 
@@ -1896,6 +1896,17 @@ function appearanceSection(i) {
     return [
       drop,
       input,
+      h('div', { class: 'icon-group-title' }, 'Interrupteurs à positions (fournis)'),
+      ...SWITCH_FACE_GROUPS.flatMap((g) => [
+        h('p', { class: 'hint' }, g.label),
+        h(
+          'div',
+          { class: 'emoji-grid user-icon-grid' },
+          ...switchFaces(g).map((src, i) =>
+            h('button', { class: key.icon === src ? 'on' : '', title: `${g.label} : ${g.positions[i]}`, onclick: () => setFace({ icon: src }, { render: 'all' }) }, h('img', { src, alt: g.positions[i], draggable: 'false' })),
+          ),
+        ),
+      ]),
       h('div', { class: 'icon-group-title' }, library.icons.length ? `Ma bibliothèque (${library.icons.length})` : 'Ma bibliothèque'),
       recent.length
         ? h(

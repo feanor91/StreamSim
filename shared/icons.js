@@ -28,6 +28,17 @@ export const aviationIcon = (name) => {
 /** Dossier des visuels de touche entiers du Rafale. */
 export const RAFALE_FACES = '/public/icons/touches-completes/rafale';
 
+/** Visuels d'interrupteurs à plusieurs positions (utilisables avec un visuel par position). */
+export const SWITCH_FACES = '/public/icons/touches-completes/interrupteurs';
+export const SWITCH_FACE_GROUPS = [
+  { folder: 'levier-de-cote', label: 'Levier de côté (3 positions)', positions: ['haut', 'milieu', 'bas'] },
+  { folder: 'bascule-de-face', label: 'Bascule de face (3 positions)', positions: ['haut', 'milieu', 'bas'] },
+  { folder: 'glissiere', label: 'Glissière (3 positions)', positions: ['haut', 'milieu', 'bas'] },
+  { folder: 'selecteur-8-positions', label: 'Sélecteur rotatif (8 positions)', positions: ['1', '2', '3', '4', '5', '6', '7', '8'] },
+];
+/** Chemins des visuels d'un groupe, dans l'ordre des positions. */
+export const switchFaces = (g) => g.positions.map((n) => `${SWITCH_FACES}/${g.folder}/${n}.svg`);
+
 /** Visuel entier d'une touche : /public/icons/touches-completes/... (affiché en plein cadre). */
 export const isFacePath = (icon) => typeof icon === 'string' && /^\/public\/icons\/touches-completes\/[\w/-]+\.svg$/.test(icon);
 
