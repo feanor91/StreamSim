@@ -2,7 +2,7 @@ import { formatHotkey, MEDIA_ACTIONS } from '/shared/keys.js';
 import { h } from './dom.js';
 import { faceFor } from '/shared/layout.js';
 import { MSFS_PRESETS, MSFS_EVENT_LABELS, MSFS_DIAL_PRESETS, MSFS_SLIDER_PRESETS, FBW_PRESETS, RAFALE_PRESETS, RAFALE_COCKPIT_PRESETS } from '/shared/msfs.js';
-import { formatDisplay } from '/shared/controls.js';
+import { formatDisplay, switchCount, positionOf } from '/shared/controls.js';
 import { SIMHUB_PRESETS } from '/shared/simhub.js';
 import { aviationIcon, isFacePath, isUserIconPath, isBuiltinIconPath } from '/shared/icons.js';
 
@@ -207,6 +207,22 @@ export const ACTION_TYPES = {
       return a.same ? `2 états · ${sum(a0)}` : `${sum(a0)} ⇄ ${sum(a1)}`;
     },
   },
+  switch: {
+    label: 'Interrupteur',
+    long: 'Interrupteur à N positions',
+    desc: 'Chaque appui passe à la position suivante (3 positions, 8 positions…)',
+    icon: '🎚️',
+    color: '#f97316',
+    create: () => ({
+      type: 'switch',
+      count: 3,
+      mode: 'bounce',
+      positions: [0, 1, 2].map(() => ({ type: 'hotkey', hotkey: { modifiers: [], key: '' }, target: { by: 'none', value: '' } })),
+      display: null,
+    }),
+    face: { icon: '🎚️', color: '#334155', title: 'Interrupteur' },
+    summary: (a) => `${switchCount(a)} positions · ${a.mode === 'cycle' ? 'cycle' : 'aller-retour'}${a.display?.simvar || a.display?.input || a.display?.simhub ? ' · position lue dans le simulateur' : ''}`,
+  },
   multi: {
     label: 'Multi',
     long: 'Multi-actions',
@@ -256,7 +272,7 @@ export const LIBRARY = [
   },
   {
     group: 'Avancé',
-    items: [{ type: 'multi' }, { type: 'toggle' }, { type: 'dial' }, { type: 'slider' }],
+    items: [{ type: 'multi' }, { type: 'toggle' }, { type: 'switch' }, { type: 'dial' }, { type: 'slider' }],
   },
   {
     group: 'MSFS 2024 (SimConnect)',
@@ -428,6 +444,25 @@ function dialFace(key, live) {
   return el;
 }
 
+// Interrupteur à N positions : un visuel par position s'il y en a, sinon libellé et repères de position.
+function switchFace(key, live) {
+  const a = key.action;
+  const n = switchCount(a);
+  const d = a.display ?? {};
+  const pos = positionOf(live.value ?? d.start ?? 0, d.values, n);
+  if (Array.isArray(d.images) && d.images[pos]) {
+    return h('div', { class: 'keyface kf-full-key' }, h('img', { class: 'kf-icon kf-full', src: d.images[pos], alt: '', draggable: 'false' }));
+  }
+  const el = h('div', { class: 'keyface' });
+  el.style.setProperty('--key-color', key.color || '#334155');
+  const ic = iconNode(key.icon, 'kf-icon');
+  if (ic) el.append(ic);
+  const label = Array.isArray(d.labels) && d.labels[pos] ? d.labels[pos] : key.title;
+  if (key.showTitle !== false && label) el.append(h('span', { class: 'kf-title' }, label));
+  el.append(h('span', { class: 'kf-state', title: `Position ${pos + 1} sur ${n}` }, ...Array.from({ length: n }, (_, i) => h('i', { class: i === pos ? 'on' : '' }))));
+  return el;
+}
+
 // Afficheur : grande valeur en direct, titre en dessous.
 function displayFace(key, live) {
   const el = h('div', { class: 'keyface kf-display-key' });
@@ -467,6 +502,7 @@ export function keyFace(rawKey, state = 0, live = {}) {
   if (rawKey.action?.type === 'dial') return dialFace(rawKey, live);
   if (rawKey.action?.type === 'slider') return sliderFace(rawKey, live);
   if (rawKey.action?.type === 'display') return displayFace(rawKey, live);
+  if (rawKey.action?.type === 'switch') return switchFace(rawKey, live);
   const key = faceFor(rawKey, state);
   if (isFacePath(key.icon)) return h('div', { class: 'keyface kf-full-key' }, h('img', { class: 'kf-icon kf-full', src: key.icon, alt: '', draggable: 'false' }));
   const showTitle = key.showTitle !== false && key.title;

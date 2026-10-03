@@ -208,6 +208,7 @@ sont conservés en changeant de type.
 | Afficheur | Affiche en direct une valeur de SimHub ou de MSFS (vitesse, rapport, temps au tour…) ; un appui peut déclencher une action |
 | Bouton rotatif | Tourner (glisser le doigt) pour « + » / « − », appuyer pour valider ; peut afficher une valeur du simulateur |
 | Curseur | Glisser pour régler une position (gaz, volets…) ou envoyer des crans « + » / « − » |
+| Interrupteur à N positions | Interrupteur à 3 positions, sélecteur à 8 positions… (2 à 12) : une action par position, un appui passe à la suivante (aller-retour ou en boucle), position lue dans le simulateur, visuel par position |
 | Bascule (2 états) | Alterne entre deux états (ex. train rentré / sorti) : titre, icône, couleur et action propres à chaque état |
 
 <p align="center">

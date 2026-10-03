@@ -17,7 +17,7 @@ import { createReleaseChecker, createApkRelay } from './update.js';
 import { createMsfs } from './msfs.js';
 import { createSimhub } from './simhub.js';
 import { normalizeVar, defaultUnit } from '../shared/msfs.js';
-import { clamp, levelToValue, valueToLevel, notchDelta, MAX_STEPS } from '../shared/controls.js';
+import { clamp, levelToValue, valueToLevel, notchDelta, switchCount, nextPosition, positionOf, MAX_STEPS } from '../shared/controls.js';
 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 // Actions transmises directement au simulateur (pas de frappe clavier à espacer).
@@ -192,6 +192,8 @@ export async function startDeckServer({
             for (const flag of ['dashes', 'managed', 'stdVar']) {
               if (a.display[flag]) out.push({ sk, kind: 'flag', flag, simvar: normalizeVar(a.display[flag]), unit: 'number' });
             }
+          } else if (a?.type === 'switch' && bound(a.display)) {
+            out.push({ sk, kind: 'value', ...src(a.display, false), sw: { count: switchCount(a), values: a.display.values } });
           } else if (a?.type === 'slider' && bound(a.sync)) {
             out.push({ sk, kind: 'level', ...src(a.sync, false), min: a.sync.min ?? 0, max: a.sync.max ?? 100 });
           }
@@ -214,6 +216,7 @@ export async function startDeckServer({
       toggles.set(b.sk, on);
       broadcast('state', { key: b.sk, state: on });
     } else if (b.kind === 'value') {
+      if (b.sw) toggles.setPos(b.sk, positionOf(value, b.sw.values, b.sw.count));
       if (liveValues[b.sk] === value) return;
       liveValues[b.sk] = value;
       broadcast('value', { key: b.sk, value, flags: liveFlags[b.sk] ?? null });
@@ -322,6 +325,38 @@ export async function startDeckServer({
     }
     throw httpError('Geste non pris en charge par cette touche.', 400);
   }
+  // Interrupteur à N positions : un appui envoie l'action de la position suivante (cycle ou aller-retour).
+  // Si une valeur du simulateur est liée à la touche, la position réelle la corrige ensuite.
+  const switchDir = new Map();
+  async function handleSwitch(key, sk) {
+    const a = key.action;
+    const n = switchCount(a);
+    const { pos, dir } = nextPosition(n, a.mode, toggles.getPos(sk), switchDir.get(sk) ?? 1);
+    const act = a.positions?.[pos];
+    if (!act?.type) throw new Error(`Aucune action définie pour la position ${pos + 1}.`);
+    await runAction(executor, act, 0, ctx);
+    switchDir.set(sk, dir);
+    toggles.setPos(sk, pos);
+    const value = a.display?.values?.[pos] ?? pos;
+    liveValues[sk] = value;
+    broadcast('value', { key: sk, value, flags: null });
+    return { ok: true, position: pos };
+  }
+  // Position mémorisée des interrupteurs à N positions (valeur affichée tant que le simulateur n'a rien envoyé).
+  function switchValues() {
+    const out = {};
+    for (const p of store.config?.profiles ?? []) {
+      for (const pg of p.pages) {
+        for (const [index, key] of Object.entries(pg.keys)) {
+          if (key?.action?.type !== 'switch') continue;
+          const sk = stateKey(p.id, pg.id, index);
+          const pos = toggles.getPos(sk);
+          out[sk] = key.action.display?.values?.[pos] ?? pos;
+        }
+      }
+    }
+    return out;
+  }
   const ctx = { msfs, simhub };
 
   const updater = customUpdater ?? createReleaseChecker({ current: VERSION, log, auto: updateCheck });
@@ -345,7 +380,7 @@ export async function startDeckServer({
     checkRequestOrigin(req);
     switch (`${req.method} ${pathname}`) {
       case 'GET /api/config':
-        return send(res, 200, { revision, config: store.config, states: toggles.all(), levels: toggles.levels(), values: liveValues, flags: liveFlags });
+        return send(res, 200, { revision, config: store.config, states: toggles.all(), levels: toggles.levels(), values: { ...switchValues(), ...liveValues }, flags: liveFlags });
 
       case 'PUT /api/config': {
         requireAdmin(req);
@@ -500,6 +535,16 @@ export async function startDeckServer({
             if (key.action.press?.type) await runAction(executor, key.action.press, 0, ctx);
             broadcast('press', { profileId, pageId, index, ok: true });
             return send(res, 200, { ok: true });
+          } catch (e) {
+            broadcast('press', { profileId, pageId, index, ok: false, error: e.message });
+            throw Object.assign(e, { status: 422 });
+          }
+        }
+        if (key.action?.type === 'switch') {
+          try {
+            const result = await handleSwitch(key, sk);
+            broadcast('press', { profileId, pageId, index, ok: true });
+            return send(res, 200, result);
           } catch (e) {
             broadcast('press', { profileId, pageId, index, ok: false, error: e.message });
             throw Object.assign(e, { status: 422 });

@@ -60,6 +60,39 @@ export function formatDuration(seconds, decimals = 3) {
   return `${neg ? '−' : ''}${h ? `${h}:${String(m).padStart(2, '0')}` : m}:${s}${frac}`;
 }
 
+/** Interrupteur à N positions : nombre de positions (2 à 12) d'une action « switch ». */
+export const switchCount = (a) => clamp(Math.round(Number(a?.count) || 3), 2, 12);
+
+/**
+ * Position suivante d'un interrupteur à N positions.
+ *  - « cycle »  : 0 → 1 → … → N-1 → 0 ;
+ *  - « bounce » : aller-retour (0 → 1 → 2 → 1 → 0…), `dir` mémorise le sens (+1 / −1).
+ * Retourne { pos, dir }.
+ */
+export function nextPosition(count, mode, cur, dir = 1) {
+  const n = Math.max(2, count);
+  const c = clamp(Math.round(cur) || 0, 0, n - 1);
+  if (mode === 'bounce') {
+    let d = dir < 0 ? -1 : 1;
+    if (c + d > n - 1 || c + d < 0) d = -d;
+    return { pos: c + d, dir: d };
+  }
+  return { pos: (c + 1) % n, dir: 1 };
+}
+
+/**
+ * Valeur lue dans le simulateur → numéro de position. Sans table `values`, la valeur est la
+ * position elle-même ; sinon on prend la valeur de la table la plus proche.
+ */
+export function positionOf(value, values, count) {
+  const raw = Number(value);
+  if (Number.isNaN(raw)) return 0;
+  if (Array.isArray(values) && values.length === count) {
+    return values.reduce((best, v, i) => (Math.abs(Number(v) - raw) < Math.abs(Number(values[best]) - raw) ? i : best), 0);
+  }
+  return clamp(Math.round(raw), 0, count - 1);
+}
+
 /** Position 0..1 d'un curseur → valeur envoyée (ex. 0..16383 pour THROTTLE_SET). */
 export function levelToValue(level, min = 0, max = 16383) {
   return Math.round(Number(min) + clamp(Number(level) || 0, 0, 1) * (Number(max) - Number(min)));

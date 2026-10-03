@@ -43,9 +43,23 @@ export class ToggleStates {
     return this.values[`lvl:${key}`];
   }
 
+  /** Position (0, 1, 2…) d'un interrupteur à N positions. */
+  getPos(key) {
+    const v = this.values[`pos:${key}`];
+    return typeof v === 'number' ? v : 0;
+  }
+
+  setPos(key, pos) {
+    const n = Math.max(0, Math.trunc(Number(pos) || 0));
+    if (n) this.values[`pos:${key}`] = n;
+    else delete this.values[`pos:${key}`];
+    this.scheduleSave();
+    return n;
+  }
+
   /** États des bascules uniquement (clé → 1). */
   all() {
-    return Object.fromEntries(Object.entries(this.values).filter(([k]) => !k.startsWith('lvl:')));
+    return Object.fromEntries(Object.entries(this.values).filter(([k]) => !k.startsWith('lvl:') && !k.startsWith('pos:')));
   }
 
   /** Positions des curseurs (clé → 0..1). */
