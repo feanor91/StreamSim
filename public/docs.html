@@ -438,6 +438,34 @@
   <li><b>Boutons rotatifs</b> et <b>curseurs</b> : leur valeur ou leur position peut aussi venir de SimHub.</li>
 </ul>
 
+<h3 id="simhub-declenchement">Commande SimHub : les trois déclenchements</h3>
+<div class="tablewrap"><table>
+  <tr><th>Déclenchement</th><th>Ce que SimHub reçoit</th><th>À utiliser pour</th></tr>
+  <tr><td><b>Appui bref</b></td><td>un appui puis un relâchement, immédiats</td><td>la plupart des commandes : changer d'écran, valider, basculer</td></tr>
+  <tr><td><b>Appuyer</b></td><td>seulement l'appui (SimHub considère la touche enfoncée)</td><td>le début d'un maintien</td></tr>
+  <tr><td><b>Relâcher</b></td><td>seulement le relâchement</td><td>la fin d'un maintien</td></tr>
+</table></div>
+<p>Pour un <b>maintien</b>, utilisez deux touches ou une <a href="#a-multi">multi-action</a> qui envoie « Appuyer », attend (étape <i>Pause</i>), puis envoie « Relâcher » avec le <b>même nom</b> de commande. Le nom est libre, sans espace : <code>deck.dash</code>, <code>deck.shakeit</code>… SimHub ne reconnaît un nom qu'après l'avoir reçu une fois (voir ci-dessous).</p>
+
+<h3 id="simhub-recette">Recette : relier une touche à une action de SimHub</h3>
+<ol class="steps">
+  <li>Dans StreamSim, placez l'action <b>Commande SimHub</b> sur une touche et donnez-lui un nom, par exemple <code>deck.dash</code>. Déclenchement : <i>Appui bref</i>.</li>
+  <li>Dans SimHub, ouvrez <b>Controls and events</b> et créez un nouveau <b>mappage</b> : choisissez l'<b>action</b> que SimHub doit exécuter (changer d'écran du tableau de bord, régler le ShakeIt, etc. : la liste dépend de votre version de SimHub).</li>
+  <li>Associez-lui son <b>entrée</b> : cliquez sur le bouton qui attend une touche, puis appuyez sur la touche du Deck (ou clic droit sur la touche dans StreamSim → <i>Tester</i>). SimHub enregistre alors le nom <code>deck.dash</code>.</li>
+  <li>Appuyez sur la touche du Deck : l'action de SimHub s'exécute.</li>
+</ol>
+<p>La même démarche vaut pour tous les « Controls » de SimHub : un nom par action, un mappage par nom. Pour <b>deux actions opposées</b> (écran suivant / précédent, intensité + / −), utilisez deux touches avec deux noms, ou un bouton rotatif dont « Tourner + » et « Tourner − » envoient deux commandes SimHub différentes.</p>
+
+<h3 id="simhub-depannage">Si SimHub ne répond pas</h3>
+<div class="tablewrap"><table>
+  <tr><th>Symptôme</th><th>Piste</th></tr>
+  <tr><td>La pastille <b>SimHub</b> reste grise ou rouge, message « SimHub non détecté (adresse:port) »</td><td>SimHub n'est pas lancé, ou le plugin <i>Property Server</i> n'est pas activé (Settings → Plugins, puis relancer SimHub). Si SimHub est sur un autre PC ou un autre port, définissez <code>SIMHUB_HOST</code> et <code>SIMHUB_PORT</code> avant de lancer StreamSim.</td></tr>
+  <tr><td>Pastille verte mais la touche n'a aucun effet dans SimHub</td><td>Le nom n'est pas encore associé : refaites l'étape 3 de la recette, SimHub attendant l'entrée, et vérifiez que le nom est identique (sans espace, mêmes majuscules).</td></tr>
+  <tr><td>Une commande « maintenue » reste bloquée</td><td>Envoyez « Relâcher » avec le même nom, ou utilisez <i>Appui bref</i>.</td></tr>
+  <tr><td>Un afficheur reste vide (« — »)</td><td>La propriété n'existe pas dans le jeu en cours, ou son nom est mal écrit : comparez avec <i>Available properties</i> de SimHub, ou utilisez le bouton ◎ pour choisir dans la liste.</td></tr>
+  <tr><td>Une valeur ne bouge pas</td><td>SimHub ne reçoit pas de données tant qu'aucun jeu n'est en cours : lancez le jeu.</td></tr>
+</table></div>
+
 <h2 id="rafale">8. Exemple complet : le Rafale (AzurPoly)</h2>
 <figure class="shot-fig wide"><img class="shot" src="/public/docs-img/deck-rafale.jpg" alt="Le Deck sur la page Rafale : boutons rotatifs (VISU G/D, MFK…) et commandes de cockpit"><figcaption>La page Rafale sur le Deck : boutons rotatifs, bascules et commandes de cockpit.</figcaption></figure>
 <p>Le Rafale montre les quatre modes à l'œuvre. Ses touches sont dans la bibliothèque, catégories <i>Rafale (AzurPoly)</i> et <i>Rafale : cockpit</i>.</p>
