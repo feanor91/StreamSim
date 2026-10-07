@@ -6,6 +6,24 @@ import { formatDisplay, switchCount, positionOf } from '/shared/controls.js';
 import { SIMHUB_PRESETS } from '/shared/simhub.js';
 import { aviationIcon, isFacePath, isUserIconPath, isBuiltinIconPath } from '/shared/icons.js';
 
+// Couleur de fond d'une touche. Le reflet du dessus (liseré clair, halo) est atténué pour les couleurs
+// très sombres : sans cela, un fond noir (#000) apparaissait gris sous le reflet.
+function paintKeyColor(el, color) {
+  el.style.setProperty('--key-color', color);
+  const m = /^#([0-9a-f]{3}|[0-9a-f]{6})$/i.exec(String(color).trim());
+  let gloss = 1;
+  if (m) {
+    const hex = m[1].length === 3 ? [...m[1]].map((c) => c + c).join('') : m[1];
+    const lin = [0, 2, 4].map((i) => {
+      const v = parseInt(hex.slice(i, i + 2), 16) / 255;
+      return v <= 0.04045 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4;
+    });
+    const lum = 0.2126 * lin[0] + 0.7152 * lin[1] + 0.0722 * lin[2];
+    gloss = Math.min(1, lum / 0.02);
+  }
+  el.style.setProperty('--gloss', gloss.toFixed(2));
+}
+
 export const isMac = /Mac|iPhone|iPad/.test(navigator.platform);
 
 // Réglage global « Mode jeu automatique » : les raccourcis clavier créés ensuite l'ont déjà coché.
@@ -406,7 +424,7 @@ function iconNode(icon, cls = 'kf-icon') {
 // Bouton rotatif : cadran avec repère orienté (angle), valeur ou icône au centre.
 function dialFace(key, live) {
   const el = h('div', { class: 'keyface kf-dial-key' });
-  el.style.setProperty('--key-color', key.color || '#1e2533');
+  paintKeyColor(el, key.color || '#1e2533');
   const ticks = Array.from({ length: 24 }, (_, i) => {
     const a = (i / 24) * Math.PI * 2;
     const r1 = i % 6 ? 40 : 37;
@@ -454,7 +472,7 @@ function switchFace(key, live) {
     return h('div', { class: 'keyface kf-full-key' }, h('img', { class: 'kf-icon kf-full', src: d.images[pos], alt: '', draggable: 'false' }));
   }
   const el = h('div', { class: 'keyface' });
-  el.style.setProperty('--key-color', key.color || '#334155');
+  paintKeyColor(el, key.color || '#334155');
   const ic = iconNode(key.icon, 'kf-icon');
   if (ic) el.append(ic);
   const label = Array.isArray(d.labels) && d.labels[pos] ? d.labels[pos] : key.title;
@@ -466,7 +484,7 @@ function switchFace(key, live) {
 // Afficheur : grande valeur en direct, titre en dessous.
 function displayFace(key, live) {
   const el = h('div', { class: 'keyface kf-display-key' });
-  el.style.setProperty('--key-color', key.color || '#111827');
+  paintKeyColor(el, key.color || '#111827');
   const text = formatDisplay(live.value, key.action?.display ?? {}, live.flags);
   const value = h('span', { class: 'kf-display-value' }, text);
   // Taille adaptée à la longueur du texte (« 3 » en très grand, « 1:23.456 » plus petit).
@@ -482,7 +500,7 @@ function displayFace(key, live) {
 function sliderFace(key, live) {
   const vertical = live.vertical !== false;
   const el = h('div', { class: `keyface kf-slider-key ${vertical ? 'vertical' : 'horizontal'}` });
-  el.style.setProperty('--key-color', key.color || '#1e2533');
+  paintKeyColor(el, key.color || '#1e2533');
   const level = Math.min(1, Math.max(0, Number(live.level) || 0));
   const track = h('div', { class: 'kf-track' }, h('div', { class: 'kf-fill' }), h('div', { class: 'kf-thumb' }));
   el.style.setProperty('--level', level);
@@ -510,7 +528,7 @@ export function keyFace(rawKey, state = 0, live = {}) {
   const el = h('div', {
     class: ['keyface', !showTitle && 'no-title', showTitle && !hasIcon && 'only-title'].filter(Boolean).join(' '),
   });
-  el.style.setProperty('--key-color', key.color || '#1c202a');
+  paintKeyColor(el, key.color || '#1c202a');
   if (hasIcon) {
     if (isImageIcon(key.icon)) el.append(h('img', { class: 'kf-icon', src: key.icon, alt: '', draggable: 'false' }));
     else if (isIconPath(key.icon)) el.append(h('img', { class: 'kf-icon kf-svg', src: key.icon, alt: '', draggable: 'false' }));
