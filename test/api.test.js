@@ -36,7 +36,7 @@ test('documentation : servie par le serveur à /docs, avec les sections principa
     assert.equal(res.status, 200);
     assert.match(res.headers.get('content-type'), /text\/html/);
     const html = await res.text();
-    for (const id of ['principe', 'actions', 'jeux', 'mode-jeu', 'msfs', 'code-avionique', 'simhub', 'rafale', 'depannage']) {
+    for (const id of ['principe', 'actions', 'jeux', 'mode-jeu', 'msfs', 'code-avionique', 'simhub', 'simhub-declenchement', 'simhub-recette', 'simhub-depannage', 'rafale', 'depannage']) {
       assert.ok(html.includes(`id="${id}"`), `section ${id}`);
     }
     // Tous les liens internes du sommaire pointent vers une section existante.
