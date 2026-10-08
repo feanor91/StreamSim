@@ -8,7 +8,7 @@ import {
 import { computeCells, placementError, findFreeSlot, keySpan, stateKey } from '/shared/layout.js';
 import { SIMHUB_PROPERTIES } from '/shared/simhub.js';
 import { switchCount } from '/shared/controls.js';
-import { AVIATION_ICON_GROUPS, aviationIcon, SWITCH_FACE_GROUPS, switchFaces } from '/shared/icons.js';
+import { AVIATION_ICON_GROUPS, aviationIcon, SWITCH_FACE_GROUPS, switchFaces, VIEW_FACE_GROUPS, viewFaces } from '/shared/icons.js';
 import { library, refreshIcons, uploadIconFile, openIconLibrary, exportIcons, pickAndImportIcons } from './icons.js';
 import { MSFS_EVENTS, MSFS_EVENT_LABELS, MSFS_SIMVARS, MSFS_NUMERIC_SIMVARS, MSFS_UNITS, FBW_EVENTS, FBW_PRESETS, isLocalVar } from '/shared/msfs.js';
 
@@ -2012,6 +2012,17 @@ function appearanceSection(i) {
           { class: 'emoji-grid user-icon-grid' },
           ...switchFaces(g).map((src, i) =>
             h('button', { class: key.icon === src ? 'on' : '', title: `${g.label} : ${g.positions[i]}`, onclick: () => setFace({ icon: src }, { render: 'all' }) }, h('img', { src, alt: g.positions[i], draggable: 'false' })),
+          ),
+        ),
+      ]),
+      h('div', { class: 'icon-group-title' }, 'Point de vue : vues et siège (fournis)'),
+      ...VIEW_FACE_GROUPS.flatMap((g) => [
+        h('p', { class: 'hint' }, g.label),
+        h(
+          'div',
+          { class: 'emoji-grid user-icon-grid' },
+          ...viewFaces(g).map((src, i) =>
+            h('button', { class: key.icon === src ? 'on' : '', title: `${g.label} : ${g.files[i][1]}`, onclick: () => setFace({ icon: src }, { render: 'all' }) }, h('img', { src, alt: g.files[i][1], draggable: 'false' })),
           ),
         ),
       ]),

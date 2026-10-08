@@ -152,3 +152,20 @@ test('icônes intégrées : visuels des interrupteurs à positions présents', a
     }
   }
 });
+
+test('icônes du point de vue : vues et siège, chaque visuel listé existe et le dossier ne contient rien d’autre', async () => {
+  const { VIEW_FACE_GROUPS, VIEW_FACES, viewFaces, isFacePath } = await import('../shared/icons.js');
+  const root = path.join(ROOT, 'public/icons/touches-completes/point-de-vue');
+  assert.deepEqual((await fs.readdir(root)).sort(), VIEW_FACE_GROUPS.map((g) => g.folder).sort());
+  for (const g of VIEW_FACE_GROUPS) {
+    assert.deepEqual((await fs.readdir(path.join(root, g.folder))).sort(), g.files.map(([n]) => `${n}.svg`).sort(), g.folder);
+    for (const f of viewFaces(g)) {
+      assert.ok(isFacePath(f) && f.startsWith(VIEW_FACES), f);
+      const svg = await fs.readFile(path.join(ROOT, f), 'utf8');
+      assert.match(svg, /^<svg[^>]+viewBox="0 0 144 144"/);
+      assert.doesNotMatch(svg, /<script|onload=|href=/i);
+    }
+  }
+  assert.equal(VIEW_FACE_GROUPS.find((g) => g.folder === 'siege-pilote').files.length, 6);
+  assert.equal(VIEW_FACE_GROUPS.find((g) => g.folder === 'vues').files.length, 2);
+});
