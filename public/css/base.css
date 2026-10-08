@@ -315,10 +315,16 @@ select optgroup {
   transform: none;
   font-size: 52cqmin;
 }
+/* Image de l'utilisateur (touche entière) : posée en absolu pour remplir exactement la touche. Une hauteur
+   en % ne se résolvait pas dans la grille de la touche : l'image gardait sa taille d'origine et était coupée en
+   bas (texte de l'étiquette) dès que la touche était plus basse que large (téléphone en paysage). Affichée
+   entière (contain), centrée sur la couleur de la touche. */
 .keyface img.kf-icon {
+  position: absolute;
+  inset: 0;
   width: 100%;
   height: 100%;
-  object-fit: cover;
+  object-fit: contain;
   transform: none;
   filter: none;
 }
@@ -345,6 +351,7 @@ select optgroup {
 }
 /* Icônes fournies (SVG blancs) : dimensionnées comme un emoji, pas en plein cadre. */
 .keyface img.kf-icon.kf-svg {
+  position: static;
   width: 48cqmin;
   height: 48cqmin;
   object-fit: contain;
