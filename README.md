@@ -167,6 +167,9 @@ versions publiées. La mise à jour automatique d'Android fonctionne à partir d
   - *Aviation* : 36 pictogrammes fournis, classés par groupes (train et commandes de vol,
     feux, pilote automatique, systèmes, radios et divers) ;
   - *Image* : vos propres images, rangées dans la **bibliothèque d'icônes**.
+    Cet onglet propose aussi des visuels fournis : interrupteurs à positions, et **point de vue**
+    (vue cockpit, vue extérieure, déplacements du siège Haut / Bas / Gauche / Droite / Avant /
+    Arrière en trois styles).
   La bibliothèque est un dossier du PC (`icons/` dans le dossier des données, un sous-dossier
   par thème : `icons/mon-avion/train.png`), servi aux Decks à `/user-icons/…`. Menu du profil →
   **Bibliothèque d'icônes** : ajout (glisser-déposer, plusieurs images à la fois), dossiers,

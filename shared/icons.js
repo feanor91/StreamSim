@@ -39,6 +39,18 @@ export const SWITCH_FACE_GROUPS = [
 /** Chemins des visuels d'un groupe, dans l'ordre des positions. */
 export const switchFaces = (g) => g.positions.map((n) => `${SWITCH_FACES}/${g.folder}/${n}.svg`);
 
+/** Visuels du point de vue : vues cockpit / extérieure et déplacements du siège (haut, bas, gauche…). */
+export const VIEW_FACES = '/public/icons/touches-completes/point-de-vue';
+const SEAT_MOVES = [['haut', 'Haut'], ['bas', 'Bas'], ['gauche', 'Gauche'], ['droite', 'Droite'], ['avant', 'Avant'], ['arriere', 'Arrière']];
+export const VIEW_FACE_GROUPS = [
+  { folder: 'vues', label: 'Vues : cockpit et extérieure', files: [['cockpit', 'Cockpit'], ['exterieure', 'Extérieure']] },
+  { folder: 'siege-croix', label: 'Siège : croix de flèches', files: SEAT_MOVES },
+  { folder: 'siege-pilote', label: 'Siège : pilote', files: SEAT_MOVES },
+  { folder: 'siege-fauteuil', label: 'Siège : fauteuil', files: SEAT_MOVES },
+];
+/** Chemins des visuels d'un groupe, dans l'ordre. */
+export const viewFaces = (g) => g.files.map(([n]) => `${VIEW_FACES}/${g.folder}/${n}.svg`);
+
 /** Visuel entier d'une touche : /public/icons/touches-completes/... (affiché en plein cadre). */
 export const isFacePath = (icon) => typeof icon === 'string' && /^\/public\/icons\/touches-completes\/[\w/-]+\.svg$/.test(icon);
 
